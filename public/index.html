@@ -306,6 +306,168 @@ footer .wrap { padding-block: 18px; display: grid; gap: 4px; max-width: 1200px; 
 }
 @media (max-width: 480px) { .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } .panel { padding: 16px; } .metric b { font-size: 22px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ===================== Refinement v5 =====================
+   Grid: 8 / 12 / 16 / 24 / 32 / 48. Sections are separated by 32, controls inside a group by 8 to 12.
+   Motion: 150ms ease-out on colour only, so nothing shifts. Black for primary actions, P1 red for emphasis. */
+:root { --t: 150ms; --ease: cubic-bezier(.2, 0, 0, 1); --r: 8px; --r-sm: 6px; --row-hover: #FAFAFA; --ink-press: #000000; }
+.wrap { max-width: 1440px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 1100px) { .wrap { padding-left: max(40px, env(safe-area-inset-left, 0px)); padding-right: max(40px, env(safe-area-inset-right, 0px)); } }
+.wrap.narrow { max-width: 1120px; }
+main .wrap { padding-block: 32px 72px; gap: 32px; }
+.topbar .wrap { min-height: 56px; gap: 32px; }
+.nav button { font-weight: 500; transition: color var(--t) var(--ease); }
+.nav button[aria-current="page"] { font-weight: 600; }
+.page-head { align-items: center; gap: 24px; }
+.page-head h1 { font-size: clamp(24px, 2.4vw, 28px); letter-spacing: -0.015em; }
+.page-head p { font-size: 14px; }
+.section { display: grid; gap: 16px; min-width: 0; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; min-height: 36px; }
+.section-head h2 { font-size: 16px; }
+
+/* buttons: one height per size, icon 16px with an 8px gap, colour-only transitions */
+.btn { position: relative; transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease), color var(--t) var(--ease), box-shadow var(--t) var(--ease); gap: 8px; }
+.btn .icon { width: 16px; height: 16px; }
+.btn-sm .icon { width: 14px; height: 14px; }
+.btn-lg { height: 44px; padding: 0 20px; font-size: 15px; }
+.btn-md { height: 36px; padding: 0 14px; font-size: 14px; }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 13px; }
+.btn-primary:hover { background: #000; }
+.btn-primary:active { background: var(--ink-press); box-shadow: inset 0 2px 0 rgba(255,255,255,.08), inset 0 0 0 999px rgba(255,255,255,.06); }
+.btn-secondary:hover { background: #F4F4F5; border-color: var(--line-strong); }
+.btn-secondary:active { background: #E9E9EB; }
+.btn-ghost:hover { background: #F4F4F5; }
+.btn-ghost:active { background: #E9E9EB; }
+.btn-danger:active { background: var(--err-tint); }
+.btn-on-dark:hover { background: #F4F4F5; }
+.btn-on-dark:active { background: #E4E4E7; }
+.btn-icon { width: 30px; padding: 0; }
+.btn.is-loading { color: transparent !important; pointer-events: none; }
+.btn.is-loading .icon { visibility: hidden; }
+.btn.is-loading::after { content: ""; position: absolute; inset: 0; margin: auto; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--spin-track, rgba(255,255,255,.35)); border-top-color: var(--spin, #fff); animation: spin 700ms linear infinite; }
+.btn-secondary.is-loading, .btn-ghost.is-loading, .btn-on-dark.is-loading { --spin: var(--ink); --spin-track: rgba(17,17,17,.2); }
+@keyframes spin { to { transform: rotate(360deg); } }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.btn:focus-visible { outline-offset: 2px; }
+
+/* summary strip */
+.strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.strip > * { padding: 14px 20px; display: grid; gap: 2px; align-content: start; text-align: left; min-width: 0; border: 0; background: none; font: inherit; color: inherit; }
+.strip > * + * { border-left: 1px solid var(--line); }
+.strip b { font-size: 22px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.strip span { font-size: 13px; color: var(--muted); }
+.strip button { cursor: pointer; transition: background-color var(--t) var(--ease); }
+.strip button:hover { background: var(--row-hover); }
+.strip button:active { background: #F4F4F5; }
+.strip .attention b { color: var(--red-ink); }
+.strip .attention .go { font-size: 12.5px; font-weight: 600; color: var(--ink); display: inline-flex; gap: 4px; align-items: center; }
+.strip .attention .go .icon { width: 12px; height: 12px; }
+
+/* toolbar: search and filters above a record list */
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.toolbar .grow { flex: 1 1 260px; max-width: 420px; }
+.search { position: relative; display: block; }
+.search .icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--faint); width: 15px; height: 15px; pointer-events: none; }
+.search input { padding-left: 34px; height: 36px; font-size: 14px; }
+.toolbar select { width: auto; height: 36px; padding-top: 0; padding-bottom: 0; font-size: 14px; }
+.toolbar .count-text { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--r); padding: 2px; background: var(--surface); gap: 2px; }
+.seg button { border: 0; background: none; height: 30px; padding: 0 12px; border-radius: 6px; font-weight: 500; font-size: 14px; color: var(--muted); cursor: pointer; transition: background-color var(--t) var(--ease), color var(--t) var(--ease); }
+.seg button:hover { color: var(--ink); background: #F4F4F5; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+/* tables: record title first, then date, status and actions in fixed places */
+table { font-size: 14px; }
+th { font-weight: 500; color: var(--muted); background: var(--surface); height: 40px; padding-top: 0; padding-bottom: 0; }
+td { padding: 12px 14px; }
+.hoverable tbody tr { transition: background-color var(--t) var(--ease); }
+@media (hover: hover) { .hoverable tbody tr:not(.detail):hover > td { background: var(--row-hover); } }
+.rec-title { font-weight: 600; color: var(--ink); }
+td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.more-row { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--line); }
+.table-wrap.flush { border-radius: var(--r); }
+
+/* forms keep a comfortable reading width beside the preview */
+.split { grid-template-columns: minmax(0, 680px) minmax(0, 1fr); gap: 32px; }
+.panel { padding: 24px; gap: 20px; }
+.msg { font-size: 14px; }
+
+/* ---------- sign-in ---------- */
+.signin { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; background: var(--ink); color: #fff; position: relative; overflow-x: hidden; }
+.signin-motif { position: absolute; right: -4vw; bottom: -14vh; height: min(92vh, 900px); width: auto; color: #1C1C1C; pointer-events: none; z-index: 0; }
+.signin-top { position: relative; z-index: 1; }
+.signin-notice { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #A1A1AA; padding-block: 16px; }
+.signin-notice i { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+.signin-main { display: grid; place-items: center; padding: 32px 24px 48px; position: relative; z-index: 1; }
+.signin-panel { width: 100%; max-width: 460px; background: #fff; color: var(--ink); border-radius: 12px; padding: 40px; display: grid; gap: 28px; }
+.signin-panel .brand { color: var(--ink); }
+.signin-panel .brand svg { width: 24px; height: 27px; }
+.signin-panel .brand-name { font-size: 16px; }
+.signin-panel h1 { font-size: 26px; line-height: 1.2; letter-spacing: -0.015em; }
+.signin-panel .lead { color: var(--muted); font-size: 15px; margin-top: 8px; }
+.signin-panel form { display: grid; gap: 20px; }
+.signin-panel input { height: 44px; font-size: 16px; }
+.signin-panel .btn { width: 100%; }
+.signin-panel .alt { justify-self: center; width: auto; }
+.signin-foot { position: relative; z-index: 1; color: #A1A1AA; font-size: 12px; padding-block: 20px 24px; max-width: 1440px; }
+.signin .preview-bar { background: #fff; color: var(--ink); position: relative; z-index: 2; }
+.signin .preview-bar .btn-on-dark { background: var(--ink); color: #fff; }
+.field .error-text { margin-top: 2px; }
+@media (max-width: 760px) {
+  .signin-motif { display: none; }
+  .signin-panel { padding: 28px 22px; gap: 24px; border-radius: 10px; }
+  .signin-main { padding: 16px 16px 32px; place-items: start center; }
+  .signin-panel h1 { font-size: 23px; }
+}
+
+/* ---------- first sign-in welcome ---------- */
+.welcome { position: fixed; inset: 0; z-index: 80; background: var(--ink); color: #fff; display: grid; place-items: center; padding: 24px; opacity: 0; transition: opacity 220ms var(--ease); }
+.welcome.in { opacity: 1; }
+.welcome.out { opacity: 0; transition-duration: 160ms; }
+.welcome-inner { display: grid; justify-items: center; gap: 24px; text-align: center; transform: translateY(8px); transition: transform 320ms var(--ease); }
+.welcome.in .welcome-inner { transform: none; }
+.welcome-inner svg { width: 64px; height: 71px; color: #fff; }
+.welcome-inner h1 { font-size: clamp(26px, 4vw, 40px); font-weight: 600; letter-spacing: -0.02em; max-width: 16ch; }
+.welcome-inner .btn { min-width: 160px; }
+
+/* adviser workspace */
+.adv-summary { display: inline-grid; grid-template-columns: repeat(2, minmax(150px, auto)); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.adv-summary > div { padding: 12px 20px; display: grid; gap: 2px; }
+.adv-summary > div + div { border-left: 1px solid var(--line); }
+.adv-summary b { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.adv-summary span { font-size: 13px; color: var(--muted); }
+.list-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 12px 20px; border-bottom: 1px solid var(--line); min-height: 60px; }
+.list-head h2 { font-size: 16px; }
+.list-head .muted { font-weight: 500; }
+.cert-table td:first-child { padding-left: 20px; }
+.cert-table th:first-child { padding-left: 20px; }
+.cert-table td.actions { padding-right: 16px; }
+
+@media (max-width: 1024px) {
+  .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip > :nth-child(3) { border-left: 0; }
+  .strip > :nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 760px) {
+  main .wrap { padding-block: 24px 56px; gap: 24px; }
+  .toolbar .grow { max-width: none; flex-basis: 100%; }
+  .toolbar .count-text { margin-left: 0; width: 100%; }
+  .adv-summary { display: grid; grid-template-columns: 1fr 1fr; }
+  .list-head { padding: 12px 14px; }
+  .cert-table td:first-child { padding-left: 0; }
+  .page-head .btn-lg { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome, .welcome-inner { transition: none !important; transform: none !important; }
+  .btn.is-loading::after { animation-duration: 1.6s; }
+}
+
+/* layout chrome: footer sits at the bottom of short pages; headings focused by the app don't show a ring */
+#app { min-height: 100dvh; display: flex; flex-direction: column; }
+#app > main { flex: 1 0 auto; }
+#app > footer { margin-top: auto; }
+[tabindex="-1"]:focus { outline: none; }
 </style>
 
 <div id="app"></div>
@@ -416,7 +578,6 @@ async function renderInto(container, blob, contentType, width) {
 // then all text is drawn as real, selectable text in Manrope with pdf-lib.
 const PAGE_W = 841.89, PAGE_H = 595.28;
 const P1_PATH = P1_MARK.match(/ d="([^"]+)"/)[1];
-const FOOTER_LEGAL = "P1 Investment Management and P1 Platform are trading names of P1 Investment Services Limited. P1 Investment Services Limited is authorised and regulated by the Financial Conduct Authority under registration number 752005.";
 const GEN = { fonts: null, bg: new Map(), tpl: new Map() };
 const THEMES = {
   dark:  { bg: "#000000", fg: [1, 1, 1], muted: [0.66, 0.69, 0.80], label: [0.57, 0.64, 0.87], rule: [0.57, 0.64, 0.87, 0.28], mark: "#FFFFFF" },
@@ -550,8 +711,8 @@ async function generateCertificate(session, person, certId, templateBlob) {
   page.drawText(ref, { x: R - F.r.widthOfTextAtSize(ref, 8.5), y: Y(98), size: 8.5, font: F.r, color: C(theme.muted) });
   const iss = `Issued ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
   page.drawText(iss, { x: R - F.r.widthOfTextAtSize(iss, 8.5), y: Y(84), size: 8.5, font: F.r, color: C(theme.muted) });
-  const legal = wrapLines(F.r, FOOTER_LEGAL, 6.5, maxW * 0.5, 3);
-  legal.forEach((l, j) => page.drawText(l, { x: L, y: Y(541 + j * 9), size: 6.5, font: F.r, color: C(theme.muted), opacity: 0.85 }));
+
+
   return new Blob([await pdf.save()], { type: "application/pdf" });
 }
 
@@ -725,6 +886,7 @@ function ServerStore() {
     async verify(email, code) { return api("/api/auth/verify", { method: "POST", body: JSON.stringify({ email, code }) }); },
     async myCertificates() { return (await api("/api/me/certificates")).certificates; },
     async logout() { await api("/api/auth/logout", { method: "POST" }); },
+    async markWelcomed() { await api("/api/me/welcomed", { method: "POST" }); },
   };
   return store;
 }
@@ -872,8 +1034,9 @@ const S = {
   view: "admin", route: "overview",            // admin routes: overview | issue | assign | advisers | insights
   flow: newFlow(),
   preview: { node: null, error: "" },
-  dir: { search: "", open: null, importing: false, csv: null },
-  armed: null, sessDel: null, backup: null,        // sessDel: { key, orphans, busy } while confirming a session delete
+  dir: { search: "", open: null, importing: false, csv: null, filter: "", sort: "name", limit: 50 },
+  armed: null, sessDel: null, backup: null,
+  cv: { tab: "sessions", q: "", session: "", status: "", limit: 50 }, // Certificates page: records view, search and filters        // sessDel: { key, orphans, busy } while confirming a session delete
   ins: { period: "all", session: "", firmOpen: null, includeInternal: false, showAllFirms: false },
   previewing: false,                           // admin viewing the adviser experience
   adviser: null, adviserCerts: [],
@@ -933,7 +1096,7 @@ function render() {
   let html;
   if (S.view === "adviser") html = adviserShell();
   else html = adminShell();
-  app.innerHTML = html + footer();
+  app.innerHTML = html + (html.startsWith('<div class="signin"') ? "" : footer());
   if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus({ preventScroll: true }); try { if (sel != null) el.setSelectionRange(sel, sel); } catch (e) {} } }
   window.scrollTo(0, scrollY);
   attachPreview();
@@ -944,9 +1107,7 @@ function go(route, opts = {}) {
   const h = $("main h1"); if (h && opts.focus !== false) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
 }
 const brand = (sub) => `<span class="brand">${P1_MARK}<span class="brand-name">CPD Hub${sub ? ` <span>${esc(sub)}</span>` : ""}</span></span>`;
-function footer() {
-  return `<footer><div class="wrap"><div>P1 Investment Management and P1 Platform are trading names of P1 Investment Services Limited. P1 Investment Services Limited is authorised and regulated by the Financial Conduct Authority under registration number 752005.</div></div></footer>`;
-}
+function footer() { return ""; }
 
 function adminShell() {
   if (S.boot !== "ready" && S.boot !== "error") return `<header class="topbar"><div class="wrap">${brand()}</div></header><main><div class="wrap"><p class="muted">Loading the hub…</p></div></main>`;
@@ -966,13 +1127,23 @@ function adminShell() {
     <main id="main"><div class="wrap">${{ overview: overviewPage, issue: issuePage, assign: assignPage, advisers: advisersPage, insights: insightsPage }[S.route]()}</div></main>`;
 }
 function adminSignIn() {
-  return `<main><div class="wrap"><form class="auth" data-form="admin-login" novalidate>
-    ${brand()}
-    <div style="display:grid;gap:6px"><h1>Admin sign in</h1><p class="muted">Manage advisers and issue CPD certificates.</p></div>
-    <label class="field"><span>Admin password</span><input id="admin-pw" type="password" autocomplete="current-password" required ${S.adminLoginError ? 'aria-invalid="true" aria-describedby="admin-err"' : ""}></label>
-    ${S.adminLoginError ? `<p class="error-text" id="admin-err">${icon("exclamation-circle")} ${esc(S.adminLoginError)}</p>` : ""}
-    <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
-  </form></div></main>`;
+  return signinScreen(`<form data-form="admin-login" novalidate>
+      <label class="field"><span>Admin password</span><input id="admin-pw" type="password" autocomplete="current-password" required></label>
+      <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
+    </form>`, "Admin sign in", "Manage advisers and issue CPD certificates.", { notice: false });
+}
+// Full-viewport sign-in: flat black, one oversized P1 mark away from the form, the form panel as the focal point
+function signinScreen(formHtml, title, lead, opts = {}) {
+  const motif = P1_MARK.replace('aria-label="P1" role="img"', 'class="signin-motif" aria-hidden="true" focusable="false"');
+  const preview = S.previewing ? `<div class="preview-bar" role="region" aria-label="Preview"><div class="wrap">${icon("eye")}<span>Previewing the adviser sign-in</span><button class="btn btn-sm btn-on-dark" data-action="end-preview">End preview</button></div></div>` : "";
+  return `<div class="signin">${motif}
+    <div class="signin-top">${preview}</div>
+    <main class="signin-main" id="main"><section class="signin-panel" aria-labelledby="signin-h">
+      ${brand()}
+      <div><h1 id="signin-h">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}</div>
+      ${formHtml}
+    </section></main>
+  </div>`;
 }
 
 // ---------- overview ----------
@@ -983,13 +1154,48 @@ function overviewPage() {
   return `<div class="page-head"><div><h1>Certificates</h1><p class="muted">Issue CPD certificates after each webinar or event. Advisers download them from their account.</p></div>
       <button class="btn btn-lg btn-primary" data-action="issue-new">${icon("plus-lg")} Issue certificates</button></div>
     ${store.loaded() ? "" : msg("info", "Loading saved records…", "clock")}
-    <section class="metrics" aria-label="Summary">
-      <div class="metric"><b>${advisers.length}</b><span>Adviser accounts</span></div>
-      <div class="metric"><b>${issued}</b><span>Certificates issued</span></div>
-      <div class="metric"><b>${fmtHours(hours)}</b><span>CPD hours issued</span></div>
-      <button type="button" class="metric ${un.length ? "attention" : ""}" data-action="go" data-route="assign"><b>${un.length}</b><span>Need assigning</span>${un.length ? `<span class="go">Assign now ${icon("arrow-right")}</span>` : ""}</button>
+    <section class="strip" aria-label="Summary">
+      <div><b>${advisers.length}</b><span>Adviser accounts</span></div>
+      <div><b>${issued}</b><span>Certificates issued</span></div>
+      <div><b>${fmtHours(hours)}</b><span>CPD hours issued</span></div>
+      <button type="button" class="${un.length ? "attention" : ""}" data-action="go" data-route="assign" aria-label="${un.length} need assigning. Open the assignment queue"><b>${un.length}</b><span>Need assigning</span>${un.length ? `<span class="go">Assign now ${icon("arrow-right")}</span>` : ""}</button>
     </section>
-    ${sessionsPanel()}`;
+    <section class="section" aria-labelledby="h-records">
+      <div class="section-head"><h2 id="h-records" class="visually-hidden">Records</h2>
+        <div class="seg" role="group" aria-label="Show">
+          <button type="button" data-action="cv-tab" data-v="sessions" aria-pressed="${S.cv.tab === "sessions"}">Sessions</button>
+          <button type="button" data-action="cv-tab" data-v="certificates" aria-pressed="${S.cv.tab === "certificates"}">All certificates</button>
+        </div></div>
+      ${S.cv.tab === "certificates" ? certificatesRecords() : sessionsPanel()}
+    </section>`;
+}
+const groupKeyOf = (c) => c.sessionId && sessionById(c.sessionId) ? "s:" + c.sessionId : "t:" + (c.eventTitle || "") + "|" + (c.eventDate || "");
+function certificatesRecords() {
+  const certs = store.certs(); const advisers = adviserById(); const V = S.cv, q = normText(V.q).trim();
+  if (!certs.length) return `<div class="empty"><strong>No certificates yet</strong><span>Certificates appear here once you've issued some.</span><button class="btn btn-md btn-primary" data-action="issue-new">${icon("plus-lg")} Issue certificates</button></div>`;
+  let list = sortCerts(certs).map(c => ({ c, a: advisers.get(c.adviserId) }));
+  if (V.session) list = list.filter(x => groupKeyOf(x.c) === V.session);
+  if (V.status === "issued") list = list.filter(x => x.a); else if (V.status === "unassigned") list = list.filter(x => !x.a);
+  if (q) list = list.filter(x => normText([x.c.eventTitle, x.c.fileName, x.a && x.a.name, x.a && x.a.email, x.a && x.a.firm].join(" ")).includes(q));
+  const shown = list.slice(0, V.limit), groups = sessionGroups();
+  return `<div class="toolbar" role="search">
+      <label class="search grow"><span class="visually-hidden">Search certificates</span>${icon("search")}<input id="cv-q" type="search" placeholder="Search by adviser, email or session" value="${esc(V.q)}" data-action="cv-q"></label>
+      <label><span class="visually-hidden">Session</span><select id="cv-session" data-cv="session"><option value="">All sessions</option>${groups.map(g => `<option value="${esc(g.key)}" ${V.session === g.key ? "selected" : ""}>${esc(g.title)} (${fmtDate(g.date)})</option>`).join("")}</select></label>
+      <label><span class="visually-hidden">Status</span><select id="cv-status" data-cv="status"><option value="">Any status</option><option value="issued" ${V.status === "issued" ? "selected" : ""}>Issued</option><option value="unassigned" ${V.status === "unassigned" ? "selected" : ""}>Needs assigning</option></select></label>
+      <span class="count-text" aria-live="polite">${list.length === certs.length ? plural(certs.length, "certificate") : `${list.length} of ${certs.length} certificates`}</span>
+    </div>
+    ${list.length ? `<div class="table-wrap flush"><table class="hoverable"><thead><tr><th>Certificate</th><th>Date</th><th class="num">Hours</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+      ${shown.map(({ c, a }) => `<tr>
+        <td><span class="rec-title">${esc(c.eventTitle)}</span><span class="sub">${a ? `${esc(a.name)} · ${esc(a.email)}` : esc(c.fileName || "")}</span></td>
+        <td class="date">${fmtDate(c.eventDate)}</td><td class="num">${fmtHours(c.cpdHours)}</td>
+        <td>${a ? `<span class="chip ok">${icon("check2")} Issued</span>` : `<span class="chip warn">${icon("exclamation-circle")} Needs assigning</span>`}</td>
+        <td class="actions"><div class="row">
+          ${a ? "" : `<button class="btn btn-sm btn-secondary" data-action="go" data-route="assign">Assign</button>`}
+          <button class="btn btn-sm btn-ghost" data-action="preview" data-id="${c.id}">${icon("eye")} Preview</button>
+          <button class="btn btn-sm btn-ghost btn-icon" data-action="download" data-id="${c.id}" aria-label="Download PDF: ${esc(c.eventTitle)}${a ? `, ${esc(a.name)}` : ""}" title="Download PDF">${icon("download")}</button>
+        </div></td></tr>`).join("")}
+      </tbody></table>${list.length > shown.length ? `<div class="more-row"><button class="btn btn-sm btn-secondary" data-action="cv-more">Show ${Math.min(50, list.length - shown.length)} more</button></div>` : ""}</div>`
+    : `<div class="empty"><strong>No certificates match</strong><span>Try a different search or clear the filters.</span><button class="btn btn-sm btn-secondary" data-action="cv-clear">Clear filters</button></div>`}`;
 }
 // every session row: saved sessions, plus older certificates grouped by title and date
 function sessionGroups() {
@@ -1017,10 +1223,10 @@ function sessionDeleteRow(g) {
 }
 function sessionsPanel() {
   const all = sessionGroups();
-  return `<section class="panel" aria-labelledby="h-sessions"><div class="panel-head"><h2 id="h-sessions">Sessions</h2></div>
-    ${all.length ? `<div class="table-wrap"><table class="stack">
+  return `<div class="sessions-list"><h3 id="h-sessions" class="visually-hidden">Sessions</h3>
+    ${all.length ? `<div class="table-wrap flush"><table class="stack hoverable">
       <thead><tr><th>Session</th><th>Date</th><th>CPD</th><th class="num">Certificates</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
-      ${all.map(g => { const open = S.sessDel && S.sessDel.key === g.key; return `<tr class="${open ? "open" : ""}"><td><strong>${esc(g.title)}</strong><span class="sub">${esc(g.kind || "")}</span></td><td data-label="Date">${fmtDate(g.date)}</td>
+      ${all.map(g => { const open = S.sessDel && S.sessDel.key === g.key; return `<tr class="${open ? "open" : ""}"><td><span class="rec-title">${esc(g.title)}</span><span class="sub">${esc(g.kind || "")}</span></td><td data-label="Date" class="date">${fmtDate(g.date)}</td>
         <td data-label="CPD">${fmtHours(g.hours)} ${Number(g.hours) === 1 ? "hr" : "hrs"}${g.cpdType ? `<span class="sub">${esc(g.cpdType)}</span>` : ""}</td>
         <td class="num" data-label="Certificates">${g.n}${g.un ? ` <span class="chip warn">${g.un} unassigned</span>` : ""}</td>
         <td class="actions"><div class="row">${g.id ? `<button class="btn btn-sm btn-secondary" data-action="issue-more" data-id="${g.id}">Issue more</button>` : ""}
@@ -1028,7 +1234,7 @@ function sessionsPanel() {
         ${open ? sessionDeleteRow(g) : ""}`; }).join("")}
       </tbody></table></div>`
     : `<div class="empty"><strong>No sessions yet</strong><span>Issue certificates for your first webinar or event.</span><button class="btn btn-md btn-primary" data-action="issue-new">${icon("plus-lg")} Issue certificates</button></div>`}
-  </section>`;
+  </div>`;
 }
 async function deleteSessionGroup(key) {
   const g = sessionGroups().find(x => x.key === key); if (!g) { S.sessDel = null; render(); return; }
@@ -1227,7 +1433,7 @@ function stepReview() {
     ${queued ? msg("info", `<span>${plural(queued, "certificate")} will be stored without an adviser and wait in the assignment queue until you choose who ${queued === 1 ? "it belongs" : "they belong"} to.</span>`) : ""}
     ${F.issuing ? `<div style="display:grid;gap:8px" aria-live="polite"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${F.issuing.total}" aria-valuenow="${F.issuing.done}" aria-label="Issuing certificates"><i style="width:${(F.issuing.done / Math.max(1, F.issuing.total)) * 100}%"></i></div><p class="small muted">${esc(F.issuing.phase)} ${F.issuing.done} of ${F.issuing.total}. Keep this page open.</p></div>` : ""}
     <div class="row between"><button class="btn btn-md btn-secondary" data-action="step" data-n="2" ${F.issuing ? "disabled" : ""}>${icon("arrow-left")} Back</button>
-      <button class="btn btn-lg btn-primary" data-action="issue" ${plan.total && !F.issuing && S.canUpload ? "" : "disabled"}>${F.issuing ? "Issuing…" : `Issue ${plural(plan.total, "certificate")}`}</button></div>
+      <button class="btn btn-lg btn-primary ${F.issuing ? "is-loading" : ""}" data-action="issue" ${F.issuing ? 'aria-busy="true" aria-disabled="true"' : plan.total && S.canUpload ? "" : "disabled"}>Issue ${plural(plan.total, "certificate")}</button></div>
     ${!S.canUpload ? msg("err", "<span>You have view-only access to this hub, so you can't issue certificates.</span>") : ""}
   </section>`;
 }
@@ -1236,8 +1442,8 @@ function resultView() {
   const names = R.issued.slice(0, 12);
   return `<div class="page-head"><div><button class="back" data-action="go" data-route="overview">${icon("arrow-left")} Certificates</button><h1>Certificates issued</h1></div></div>
     <section class="panel" aria-labelledby="h-res">
-      ${R.failed.length ? msg("warn", `<strong id="h-res">Issued ${plural(R.issued.length, "certificate")} for ${esc(R.title)}. ${R.failed.length} failed.</strong><ul>${R.failed.slice(0, 8).map(f => `<li>${esc(f)}</li>`).join("")}</ul><span>The failed ones weren't saved. Go back and try them again.</span>`)
-        : msg("ok", `<strong id="h-res">Issued ${plural(R.issued.length, "certificate")} for ${esc(R.title)}.</strong><span>${R.created ? `${plural(R.created, "new adviser account")} created. ` : ""}Advisers can now sign in and download ${R.issued.length === 1 ? "it" : "them"}.</span>`)}
+      ${R.failed.length ? msg("warn", `<strong id="h-res">${plural(R.issued.length, "certificate")} issued for ${esc(R.title)}. ${R.failed.length} failed.</strong><ul>${R.failed.slice(0, 8).map(f => `<li>${esc(f)}</li>`).join("")}</ul><span>The failed ones weren't saved. Go back and try them again.</span>`)
+        : msg("ok", `<strong id="h-res">${plural(R.issued.length, "certificate")} issued for ${esc(R.title)}.</strong><span>${R.created ? `${plural(R.created, "new adviser account")} created. ` : ""}Advisers can now sign in and download ${R.issued.length === 1 ? "it" : "them"}.</span>`)}
       ${R.queued ? msg("info", `<span>${plural(R.queued, "certificate")} went to the assignment queue.</span> <button class="btn btn-sm btn-secondary" data-action="go" data-route="assign" style="justify-self:start">Assign now</button>`) : ""}
       ${names.length ? `<div class="table-wrap"><table><thead><tr><th>Issued to</th><th>Email</th></tr></thead><tbody>${names.map(n => `<tr><td>${esc(n.name)}</td><td>${esc(n.email)}</td></tr>`).join("")}${R.issued.length > names.length ? `<tr><td colspan="2" class="muted">and ${R.issued.length - names.length} more</td></tr>` : ""}</tbody></table></div>` : ""}
       <div class="row">
@@ -1270,23 +1476,34 @@ function delBtn(kind, id, label = "Delete") {
 function advisersPage() {
   const D = S.dir, advisers = store.advisers(), certs = store.certs();
   const q = normText(D.search).trim();
-  const counts = new Map(), hrs = new Map();
-  certs.forEach(c => { if (c.adviserId) { counts.set(c.adviserId, (counts.get(c.adviserId) || 0) + 1); hrs.set(c.adviserId, (hrs.get(c.adviserId) || 0) + (Number(c.cpdHours) || 0)); } });
-  const list = advisers.filter(a => !q || normText(a.name + " " + a.email + " " + (a.firm || "")).includes(q)).sort((a, b) => a.name.localeCompare(b.name));
+  const counts = new Map(), hrs = new Map(), last = new Map();
+  certs.forEach(c => { if (c.adviserId) { counts.set(c.adviserId, (counts.get(c.adviserId) || 0) + 1); hrs.set(c.adviserId, (hrs.get(c.adviserId) || 0) + (Number(c.cpdHours) || 0)); if ((c.eventDate || "") > (last.get(c.adviserId) || "")) last.set(c.adviserId, c.eventDate || ""); } });
+  let list = advisers.filter(a => !q || normText(a.name + " " + a.email + " " + (a.firm || "")).includes(q));
+  if (D.filter === "with") list = list.filter(a => counts.get(a.id)); else if (D.filter === "without") list = list.filter(a => !counts.get(a.id));
+  const by = { name: (a, b) => a.name.localeCompare(b.name), certs: (a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0) || a.name.localeCompare(b.name), recent: (a, b) => (last.get(b.id) || "").localeCompare(last.get(a.id) || "") || a.name.localeCompare(b.name) };
+  list.sort(by[D.sort] || by.name);
+  const shown = list.slice(0, D.limit);
   return `<div class="page-head"><div><h1>Advisers</h1><p class="muted">${plural(advisers.length, "account")}. Advisers sign in with the email address shown here.</p></div>
       <div class="row"><button class="btn btn-md btn-secondary" data-action="dir-import" aria-expanded="${D.importing}">${icon("person-check")} Import advisers</button>
       <button class="btn btn-md btn-secondary" data-action="zip-all" ${certs.some(c => c.adviserId) ? "" : "disabled"}>${icon("download")} All certificates (zip)</button></div></div>
     ${D.importing ? importPanel() : ""}
-    <section class="panel" aria-label="Adviser list">
-      <label class="field" style="max-width:420px"><span class="visually-hidden">Search advisers</span><input id="dir-search" type="search" placeholder="Search by name, email or firm" value="${esc(D.search)}" data-action="search"></label>
-      ${advisers.length ? `<div class="table-wrap"><table><thead><tr><th>Adviser</th><th>Firm</th><th class="num">Certificates</th><th class="num">CPD hours</th><th><span class="visually-hidden">Details</span></th></tr></thead><tbody>
-        ${list.map(a => { const open = D.open === a.id; return `<tr class="${open ? "open" : ""}">
-          <td><strong>${esc(a.name)}</strong><span class="sub">${esc(a.email)}</span></td><td>${esc(a.firm || "")}</td>
+    <section class="section" aria-label="Adviser list">
+      ${advisers.length ? `<div class="toolbar" role="search">
+        <label class="search grow"><span class="visually-hidden">Search advisers</span>${icon("search")}<input id="dir-search" type="search" placeholder="Search by name, email or firm" value="${esc(D.search)}" data-action="search"></label>
+        <label><span class="visually-hidden">Show</span><select id="dir-filter" data-dir="filter"><option value="">All advisers</option><option value="with" ${D.filter === "with" ? "selected" : ""}>With certificates</option><option value="without" ${D.filter === "without" ? "selected" : ""}>No certificates yet</option></select></label>
+        <label><span class="visually-hidden">Sort by</span><select id="dir-sort" data-dir="sort"><option value="name">Sort: Name</option><option value="certs" ${D.sort === "certs" ? "selected" : ""}>Sort: Most certificates</option><option value="recent" ${D.sort === "recent" ? "selected" : ""}>Sort: Most recent session</option></select></label>
+        <span class="count-text" aria-live="polite">${list.length === advisers.length ? plural(advisers.length, "adviser") : `${list.length} of ${advisers.length} advisers`}</span>
+      </div>
+      ${list.length ? `<div class="table-wrap flush"><table class="hoverable"><thead><tr><th>Adviser</th><th>Firm</th><th>Last session</th><th class="num">Certificates</th><th class="num">CPD hours</th><th><span class="visually-hidden">Details</span></th></tr></thead><tbody>
+        ${shown.map(a => { const open = D.open === a.id; return `<tr class="${open ? "open" : ""}">
+          <td><span class="rec-title">${esc(a.name)}</span><span class="sub">${esc(a.email)}</span></td><td>${esc(a.firm || "")}</td>
+          <td class="date">${last.get(a.id) ? fmtDate(last.get(a.id)) : '<span class="muted">None yet</span>'}</td>
           <td class="num">${counts.get(a.id) || 0}</td><td class="num">${fmtHours(hrs.get(a.id) || 0)}</td>
-          <td class="actions"><button class="btn btn-sm btn-secondary" data-action="dir-open" data-id="${a.id}" aria-expanded="${open}" aria-controls="det-${a.id}">${open ? "Close" : "View"}</button></td></tr>
-          ${open ? `<tr class="detail" id="det-${a.id}"><td colspan="5">${adviserDetail(a)}</td></tr>` : ""}`; }).join("")}
-        ${!list.length ? `<tr><td colspan="5"><div class="empty" style="border:0">No advisers match "${esc(D.search)}".</div></td></tr>` : ""}
-      </tbody></table></div>` : `<div class="empty"><strong>No advisers yet</strong><span>Accounts are created when you issue certificates from an attendee list, or import advisers here.</span></div>`}
+          <td class="actions"><button class="btn btn-sm btn-secondary" data-action="dir-open" data-id="${a.id}" aria-expanded="${open}" aria-controls="det-${a.id}" aria-label="${open ? "Close" : "View"} ${esc(a.name)}">${open ? "Close" : "View"}</button></td></tr>
+          ${open ? `<tr class="detail" id="det-${a.id}"><td colspan="6">${adviserDetail(a)}</td></tr>` : ""}`; }).join("")}
+      </tbody></table>${list.length > shown.length ? `<div class="more-row"><button class="btn btn-sm btn-secondary" data-action="dir-more">Show ${Math.min(50, list.length - shown.length)} more</button></div>` : ""}</div>`
+      : `<div class="empty"><strong>No advisers match</strong><span>Try a different search or filter.</span></div>`}`
+      : `<div class="empty"><strong>No advisers yet</strong><span>Accounts are created when you issue certificates from an attendee list, or import advisers here.</span></div>`}
     </section>
     ${backupPanel()}`;
 }
@@ -1444,44 +1661,72 @@ function insightsPage() {
 
 // ---------- adviser portal ----------
 function adviserShell() {
-  const top = `<header class="topbar"><div class="wrap">${brand()}
-      ${S.adviser && !S.previewing ? `<div class="topbar-end"><button class="btn btn-sm btn-secondary" data-action="logout">${icon("box-arrow-right")}<span class="btn-label">Sign out</span></button></div>` : ""}</div></header>`;
-  const band = `${S.previewing ? `<div class="preview-bar" role="region" aria-label="Preview"><div class="wrap">${icon("eye")}<span>${S.adviser ? `Previewing <strong>${esc(S.adviser.name)}</strong>'s view` : "Previewing the adviser sign-in"}</span><button class="btn btn-sm btn-on-dark" data-action="end-preview">End preview</button></div></div>` : ""}
-    <div class="audience"><div class="wrap"><i aria-hidden="true"></i>For UK financial advisers only</div></div>`;
-  if (S.boot === "loading") return top + band + `<main><div class="wrap"><p class="muted">Loading…</p></div></main>`;
-  if (!S.adviser) return top + band + `<main><div class="wrap">${signInCard()}</div></main>`;
+  if (S.boot === "loading" || (!S.adviser && S.boot !== "ready" && S.boot !== "error")) return signinScreen(`<p class="muted">Loading…</p>`, "Your CPD certificates", "");
+  if (!S.adviser) return signInCard();
+  const top = `<header class="topbar"><div class="wrap narrow">${brand()}
+      ${!S.previewing ? `<div class="topbar-end"><button class="btn btn-sm btn-secondary" data-action="logout">${icon("box-arrow-right")}<span class="btn-label">Sign out</span></button></div>` : ""}</div></header>`;
+  const band = `${S.previewing ? `<div class="preview-bar" role="region" aria-label="Preview"><div class="wrap narrow">${icon("eye")}<span>Previewing <strong>${esc(S.adviser.name)}</strong>'s view</span><button class="btn btn-sm btn-on-dark" data-action="end-preview">End preview</button></div></div>` : ""}`;
   const list = sortCerts(S.adviserCerts), hours = list.reduce((s, c) => s + (Number(c.cpdHours) || 0), 0);
-  return top + band + `<main id="main"><div class="wrap">
-    <div class="page-head"><div><h1>My CPD certificates</h1><p class="muted">${esc(S.adviser.name)} · ${esc(S.adviser.email)}</p></div></div>
-    <div class="figures"><div class="figure"><b>${list.length}</b><span>Certificates earned</span></div><div class="figure"><b>${fmtHours(hours)}</b><span>CPD hours with P1</span></div></div>
-    ${list.length ? `<section class="panel" aria-labelledby="h-certs" style="padding:0;gap:0">
-      <div class="panel-head" style="padding:16px 20px;border-bottom:1px solid var(--line)"><h2 id="h-certs">Certificates</h2>
-        ${list.length > 1 ? `<button class="btn btn-md btn-primary" data-action="zip-mine">${icon("download")} Download all</button>` : ""}</div>
-      <table class="cert-table stack"><thead><tr><th>Session</th><th>Date</th><th>CPD type</th><th class="num">Hours</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
-        ${list.map(c => `<tr><td><span class="cert-title">${esc(c.eventTitle)}</span>${c.eventKind ? `<span class="sub">${esc(c.eventKind)}</span>` : ""}</td>
-          <td data-label="Date">${fmtDate(c.eventDate)}</td><td data-label="CPD type">${esc(certCpdType(c) || "Not stated")}</td>
+  return top + band + `<main id="main"><div class="wrap narrow">
+    <div class="page-head"><div><h1>My CPD certificates</h1><p class="muted">${esc(S.adviser.name)} · ${esc(S.adviser.email)}</p></div>
+      <div class="adv-summary" aria-label="Summary"><div><b>${list.length}</b><span>${list.length === 1 ? "Certificate" : "Certificates"}</span></div><div><b>${fmtHours(hours)}</b><span>CPD hours with P1</span></div></div></div>
+    ${list.length ? `<section class="list-panel" aria-labelledby="h-certs">
+      <div class="list-head"><h2 id="h-certs">Certificates <span class="muted">${list.length}</span></h2>
+        <button class="btn btn-md btn-primary" data-action="zip-mine">${icon("download")} Download all</button></div>
+      <table class="cert-table stack hoverable"><thead><tr><th>Session</th><th>Date</th><th>CPD type</th><th class="num">Hours</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        ${list.map(c => `<tr><td><span class="rec-title">${esc(c.eventTitle)}</span>${c.eventKind ? `<span class="sub">${esc(c.eventKind)}</span>` : ""}</td>
+          <td data-label="Date" class="date">${fmtDate(c.eventDate)}</td><td data-label="CPD type">${esc(certCpdType(c) || "Not stated")}</td>
           <td class="num" data-label="Hours">${fmtHours(c.cpdHours)}</td>
-          <td class="actions"><div class="row"><button class="btn btn-sm btn-ghost" data-action="preview" data-id="${c.id}" aria-label="Preview certificate for ${esc(c.eventTitle)}">${icon("eye")} Preview</button>
-            <button class="btn btn-sm btn-secondary" data-action="download" data-id="${c.id}" aria-label="Download PDF for ${esc(c.eventTitle)}">${icon("download")} Download PDF</button></div></td></tr>`).join("")}
+          <td class="actions"><div class="row"><button class="btn btn-sm btn-ghost" data-action="preview" data-id="${c.id}" aria-label="Preview certificate: ${esc(c.eventTitle)}">${icon("eye")} Preview</button>
+            <button class="btn btn-sm btn-secondary" data-action="download" data-id="${c.id}" aria-label="Download PDF: ${esc(c.eventTitle)}">${icon("download")} Download PDF</button></div></td></tr>`).join("")}
       </tbody></table></section>`
     : `<div class="empty">${icon("inbox")}<strong>No certificates yet</strong><span>Your certificates appear here after each P1 webinar or event you attend.</span></div>`}
   </div></main>`;
 }
 function signInCard() {
   const L = S.login;
-  if (L.step === "code") return `<form class="auth" data-form="adviser-code" novalidate>
-    <div style="display:grid;gap:6px"><h1>Check your email</h1><p class="muted">If <strong>${esc(L.email)}</strong> is registered, we've sent it a 6-digit code. It expires in 10 minutes.</p></div>
-    <label class="field"><span>Sign-in code</span><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required ${L.error ? 'aria-invalid="true" aria-describedby="login-err"' : ""}></label>
-    ${L.error ? `<p class="error-text" id="login-err" role="alert">${icon("exclamation-circle")} ${esc(L.error)}</p>` : ""}
-    <button class="btn btn-lg btn-primary" type="submit" ${L.busy ? "disabled" : ""}>${L.busy ? "Checking…" : "Sign in"}</button>
-    <button type="button" class="btn btn-md btn-ghost" data-action="login-back">Use a different email</button>
-  </form>`;
-  return `<form class="auth" data-form="adviser-login" novalidate>
-    <div style="display:grid;gap:6px"><h1>View your CPD certificates</h1><p class="muted">Sign in with the email address you registered with for our webinars and events.</p></div>
-    <label class="field"><span>Email address</span><input id="login-email" type="email" autocomplete="email" required value="${esc(L.email)}" ${L.error ? 'aria-invalid="true" aria-describedby="login-err"' : ""}></label>
-    ${L.error ? `<p class="error-text" id="login-err" role="alert">${icon("exclamation-circle")} ${esc(L.error)}</p>` : ""}
-    <button class="btn btn-lg btn-primary" type="submit" ${L.busy ? "disabled" : ""}>${L.busy ? "Checking…" : "Continue"}</button>
-  </form>`;
+  if (L.step === "code") return signinScreen(`<form data-form="adviser-code" novalidate>
+      <label class="field"><span>Sign-in code</span><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></label>
+      <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
+      <button type="button" class="btn btn-md btn-ghost alt" data-action="login-back">Use a different email</button>
+    </form>`, "Check your email", `If <strong>${esc(L.email)}</strong> is registered, we've sent it a 6-digit code. It expires in 10 minutes.`);
+  return signinScreen(`<form data-form="adviser-login" novalidate>
+      <label class="field"><span>Email address</span><input id="login-email" type="email" autocomplete="email" inputmode="email" required value="${esc(L.email)}"></label>
+      <button class="btn btn-lg btn-primary" type="submit">Continue</button>
+    </form>`, "Your CPD certificates", "Sign in with the email address you registered with for P1 webinars and events.");
+}
+// In-place form feedback: never re-renders, so typed input and focus survive a failed submission
+function setFormError(input, text) {
+  const field = input.closest(".field"); field.querySelector(".error-text")?.remove();
+  if (!text) { input.removeAttribute("aria-invalid"); input.removeAttribute("aria-describedby"); return; }
+  const p = document.createElement("p"); p.className = "error-text"; p.id = input.id + "-err"; p.setAttribute("role", "alert");
+  p.innerHTML = icon("exclamation-circle") + " "; p.append(document.createTextNode(text));
+  field.appendChild(p); input.setAttribute("aria-invalid", "true"); input.setAttribute("aria-describedby", p.id); input.focus();
+}
+function setBusy(btn, busy) { if (!btn) return; btn.classList.toggle("is-loading", busy); btn.setAttribute("aria-busy", busy ? "true" : "false"); if (busy) btn.dataset.busy = "1"; else delete btn.dataset.busy; }
+
+// ---------- first sign-in welcome ----------
+const welcomeKey = (k) => "p1cpd:welcomed:" + k;
+function hasWelcomed(k) { try { return localStorage.getItem(welcomeKey(k)) === "1"; } catch (e) { return false; } }
+function showWelcome(k) {
+  try { localStorage.setItem(welcomeKey(k), "1"); } catch (e) {}
+  if (k.startsWith("adviser:") && store.markWelcomed) store.markWelcomed().catch(() => {});
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const w = document.createElement("div"); w.className = "welcome"; w.setAttribute("role", "dialog"); w.setAttribute("aria-modal", "true"); w.setAttribute("aria-labelledby", "welcome-h");
+  w.innerHTML = `<div class="welcome-inner">${P1_MARK.replace('role="img"', 'role="img" focusable="false"')}<h1 id="welcome-h">Welcome to the P1 CPD Hub</h1><button type="button" class="btn btn-lg btn-on-dark">Continue</button></div>`;
+  document.body.appendChild(w);
+  const btn = w.querySelector("button"); btn.focus({ preventScroll: true });
+  requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add("in")));
+  let done = false;
+  const finish = () => {
+    if (done) return; done = true; clearTimeout(timer); document.removeEventListener("keydown", onKey, true);
+    w.classList.remove("in"); w.classList.add("out");
+    setTimeout(() => { w.remove(); const h = $("main h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }, reduce ? 0 : 170);
+  };
+  const onKey = (e) => { if (e.key === "Escape") { e.preventDefault(); finish(); } else if (e.key === "Tab") { e.preventDefault(); btn.focus(); } };
+  document.addEventListener("keydown", onKey, true);
+  btn.addEventListener("click", finish);
+  const timer = setTimeout(finish, 2200);
 }
 
 // ---------- certificate files, preview, downloads ----------
@@ -1659,7 +1904,7 @@ async function issueNow() {
   } catch (e) { result.failed.unshift(e.message || "The session couldn't be saved."); }
   F.issuing = null; F.result = result; render(); window.scrollTo(0, 0);
   const h = document.getElementById("h-res"); if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
-  announce(`Issued ${plural(result.issued.length, "certificate")}.`);
+  announce(`${plural(result.issued.length, "certificate")} issued.`); toast(`${plural(result.issued.length, "certificate")} issued`, "ok");
 }
 function startFlow(session, step = 1) {
   S.flow = newFlow(session ? { ...newSession(), ...session } : null);
@@ -1696,7 +1941,7 @@ document.addEventListener("click", async (e) => {
         break;
       }
       case "preview-modal": openModal("Certificate preview", S.flow.session.title || "", "", (body) => { body.innerHTML = `<div class="preview-box" id="cert-preview-modal">${previewPlaceholder()}</div>`; attachPreview(); }); break;
-      case "issue": await issueNow(); break;
+      case "issue": if (!S.flow.issuing) await issueNow(); break;
       case "zip-result": await downloadZip(store.certs().filter(c => S.flow.result.certIds.includes(c.id)), safeFile(`CPD certificates - ${S.flow.result.title}`) + ".zip", true); break;
       case "up-remove": S.flow.uploads = S.flow.uploads.filter(r => r.key !== t.dataset.key); S.flow.uploads.forEach(flagUploadDuplicate); render(); break;
       case "csv-template": await saveFile("cpd-attendees-template.csv", new Blob(["email,name,firm\njane.smith@example-advice.co.uk,Jane Smith,Example Advice Ltd\n"], { type: "text/csv" })); break;
@@ -1717,6 +1962,10 @@ document.addEventListener("click", async (e) => {
       }
       case "preview": openCertPreview(id); break;
       case "download": await downloadOne(id); break;
+      case "cv-tab": S.cv.tab = t.dataset.v; render(); break;
+      case "cv-more": S.cv.limit += 50; render(); break;
+      case "cv-clear": S.cv = { ...S.cv, q: "", session: "", status: "", limit: 50 }; render(); $("#cv-q")?.focus(); break;
+      case "dir-more": S.dir.limit += 50; render(); break;
       case "dir-open": S.dir.open = S.dir.open === id ? null : id; render(); break;
       case "dir-import": S.dir.importing = !S.dir.importing; S.dir.csv = null; render(); break;
       case "dir-cancel": S.dir.importing = false; S.dir.csv = null; render(); break;
@@ -1757,44 +2006,63 @@ document.addEventListener("change", async (e) => {
   if (t.dataset.action === "up-inc") { const r = F.uploads.find(x => x.key === t.dataset.key); if (r) r.include = t.checked; render(); return; }
   if (t.dataset.action === "up-assign") { const r = F.uploads.find(x => x.key === t.dataset.key); if (r) { r.adviserId = t.value; r.method = t.value ? "manual" : ""; r.status = t.value ? "matched" : "unmatched"; r.include = true; r.note = t.value ? "" : "Will go to the assignment queue"; F.uploads.forEach(flagUploadDuplicate); } render(); return; }
   if (t.dataset.action === "move") { try { await store.assign(t.dataset.id, t.value); const who = adviserById().get(t.value); toast(who ? `Moved to ${who.name}.` : "Moved to the assignment queue.", "ok"); } catch (err) { toast(err.message, "err"); } render(); return; }
+  if (t.dataset.cv) { S.cv[t.dataset.cv] = t.value; S.cv.limit = 50; render(); return; }
+  if (t.dataset.dir) { S.dir[t.dataset.dir] = t.value; S.dir.limit = 50; render(); return; }
   if (t.dataset.ins) { S.ins[t.dataset.ins] = t.type === "checkbox" ? t.checked : t.value; if (t.dataset.ins !== "session") S.ins.firmOpen = null; render(); return; }
 });
 document.addEventListener("input", (e) => {
   const t = e.target;
-  if (t.dataset.action === "search") { S.dir.search = t.value; render(); return; }
+  if (t.dataset.action === "search") { S.dir.search = t.value; S.dir.limit = 50; render(); return; }
+  if (t.dataset.action === "cv-q") { S.cv.q = t.value; S.cv.limit = 50; render(); return; }
+  if (t.matches && t.matches(".signin-panel input") && t.getAttribute("aria-invalid")) setFormError(t, "");
   if (t.dataset.sbind && t.type !== "checkbox" && t.tagName !== "SELECT") {
     S.flow.session[t.dataset.sbind] = t.value; schedulePreview(); if (t.value) clearFieldError(t.dataset.sbind, t);
     if (t.type === "range") { const v = $("#pos-val"); if (v) v.textContent = t.value; }
   }
 });
 document.addEventListener("submit", async (e) => {
-  const f = e.target.dataset.form; if (!f) return; e.preventDefault();
+  const form = e.target, f = form.dataset.form; if (!f) return; e.preventDefault();
+  const btn = form.querySelector('button[type="submit"]'); if (btn && btn.dataset.busy) return;
   const L = S.login;
-  try {
-    if (f === "admin-login") { S.adminLoginError = ""; await store.adminLogin($("#admin-pw").value); S.isAdmin = true; go("overview"); return; }
-    if (f === "adviser-login") {
-      L.email = normEmail($("#login-email").value); L.error = "";
-      if (!validEmail(L.email)) { L.error = "Enter a valid email address, like name@yourfirm.co.uk."; render(); $("#login-email").focus(); return; }
-      if (S.previewing) { // preview never touches the real adviser sign-in
-        const a = store.advisers().find(x => normEmail(x.email) === L.email);
-        if (!a) { L.error = "No adviser account uses that email. Check the spelling, or import them from the Advisers tab."; render(); $("#login-email").focus(); return; }
-        previewAs(a); return;
-      }
-      L.busy = true; render();
-      const r = await store.login(L.email); L.busy = false;
-      if (r.codeSent) { L.step = "code"; render(); $("#login-code").focus(); return; }
-      S.adviser = r.adviser; S.adviserCerts = await store.myCertificates(r.adviser); render(); $("main h1")?.focus(); return;
+  if (f === "admin-login") {
+    const pw = $("#admin-pw"); setFormError(pw, "");
+    if (!pw.value) return setFormError(pw, "Enter the admin password.");
+    setBusy(btn, true);
+    try { await store.adminLogin(pw.value); S.isAdmin = true; go("overview"); if (!hasWelcomed("admin")) showWelcome("admin"); }
+    catch (err) { setBusy(btn, false); setFormError(pw, err.message); pw.select(); }
+    return;
+  }
+  if (f === "adviser-login") {
+    const input = $("#login-email"); setFormError(input, "");
+    L.email = normEmail(input.value);
+    if (!validEmail(L.email)) return setFormError(input, "Enter a valid email address, like name@yourfirm.co.uk.");
+    if (S.previewing) { // preview never touches the real adviser sign-in
+      const a = store.advisers().find(x => normEmail(x.email) === L.email);
+      if (!a) return setFormError(input, "No adviser account uses that email. Check the spelling, or import them from the Advisers tab.");
+      previewAs(a); return;
     }
-    if (f === "adviser-code") {
-      L.busy = true; L.error = ""; render();
-      const r = await store.verify(L.email, $("#login-code").value.trim());
-      L.busy = false; S.adviser = r.adviser; S.adviserCerts = await store.myCertificates(r.adviser); render(); return;
-    }
-  } catch (err) {
-    if (f === "admin-login") { S.adminLoginError = err.message; render(); $("#admin-pw").focus(); return; }
-    L.busy = false; L.error = err.message; render(); (document.getElementById(f === "adviser-code" ? "login-code" : "login-email"))?.focus();
+    setBusy(btn, true);
+    try {
+      const r = await store.login(L.email);
+      if (r.codeSent) { L.step = "code"; render(); $("#login-code")?.focus(); return; }
+      await signedIn(r.adviser);
+    } catch (err) { setBusy(btn, false); setFormError(input, err.message); }
+    return;
+  }
+  if (f === "adviser-code") {
+    const input = $("#login-code"); setFormError(input, "");
+    if (!/^\d{6}$/.test(input.value.trim())) return setFormError(input, "Enter the 6-digit code from the email.");
+    setBusy(btn, true);
+    try { const r = await store.verify(L.email, input.value.trim()); await signedIn(r.adviser); }
+    catch (err) { setBusy(btn, false); setFormError(input, err.message); input.select(); }
   }
 });
+async function signedIn(adviser) {
+  S.adviser = adviser; S.adviserCerts = await store.myCertificates(adviser); S.login.step = "email";
+  render(); window.scrollTo(0, 0);
+  const k = "adviser:" + adviser.id;
+  if (!adviser.welcomed && !hasWelcomed(k)) showWelcome(k); else { const h = $("main h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }
+}
 ["dragover", "dragleave", "drop"].forEach(ev => document.addEventListener(ev, (e) => {
   const z = e.target.closest && e.target.closest("[data-drop]"); if (!z) return;
   e.preventDefault();
@@ -1838,6 +2106,7 @@ document.addEventListener("focusout", e => { const g = e.target.closest && e.tar
     }
   } catch (e) { S.boot = "error"; S.bootError = e.message || "The hub could not start."; }
   render();
+  if (HUB_MODE === "artifact" && S.boot === "ready" && S.view === "admin" && !hasWelcomed("admin")) showWelcome("admin");
 })();
 window.addEventListener("hashchange", () => { if (HUB_MODE === "server" && location.hash === "#admin") { S.view = "admin"; render(); } });
 
