@@ -1,0 +1,1847 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"></head><body>
+<title>P1 CPD Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: P1 Investment Services working tool. White top bar, light grey workspace, white bordered panels.
+   Black is the action colour (contrast), P1 red marks emphasis: current location, attention, required, key figures. Single light look. */
+:root {
+  --bg: #F4F4F5;          /* workspace */
+  --surface: #FFFFFF;
+  --surface-2: #FAFAFA;   /* table heads, quiet fills */
+  --line: #E4E4E7;
+  --line-strong: #D4D4D8;
+  --ink: #111111;         /* near-black text and primary buttons */
+  --ink-hover: #2B2B2B;
+  --muted: #52525B;
+  --faint: #71717A;
+  --red: #EA4443;         /* P1 red: emphasis, never body text on white */
+  --red-ink: #C42B2A;     /* red for small text and icons on white (AA) */
+  --red-tint: #FDECEC;
+  --ok: #15803D; --ok-tint: #ECF7EF;
+  --warn: #B45309; --warn-tint: #FEF5E7;
+  --err: #B42318; --err-tint: #FDEDEC;
+  --info-tint: #F1F1F3;
+  --s-ret: #52525B; --s-new: #EA4443; /* chart: returning (neutral), first time (red) */
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --r: 8px; --r-sm: 6px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--font); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--ink); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+.icon { width: 1em; height: 1em; fill: currentColor; flex: none; vertical-align: -0.125em; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 18px; font-weight: 600; margin: 0; line-height: 1.3; }
+h3 { font-size: 15px; font-weight: 600; margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- top bar ---------- */
+.topbar { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--surface); }
+.topbar .wrap { display: flex; align-items: center; gap: 24px; min-height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); flex: none; }
+.brand svg { width: 22px; height: 24px; }
+.brand-name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.brand-name span { font-weight: 500; color: var(--muted); }
+.nav { display: flex; gap: 4px; align-self: stretch; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.nav button { background: none; border: 0; padding: 0 12px; font-weight: 600; font-size: 14px; color: var(--muted); cursor: pointer; position: relative; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.nav button:hover { color: var(--ink); }
+.nav button[aria-current="page"] { color: var(--ink); }
+.nav button[aria-current="page"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: var(--red); }
+.nav .count { background: var(--red); color: #fff; border-radius: 999px; font-size: 11px; padding: 0 6px; line-height: 18px; min-width: 18px; text-align: center; }
+.topbar-end { margin-left: auto; display: flex; gap: 8px; align-items: center; flex: none; }
+
+/* adviser-only notice + preview banner */
+.audience { background: var(--surface); border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+.audience .wrap { padding-block: 7px; display: flex; align-items: center; gap: 8px; }
+.audience i { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex: none; }
+.preview-bar { background: var(--ink); color: #fff; }
+.preview-bar .wrap { display: flex; align-items: center; gap: 12px; padding-block: 10px; flex-wrap: wrap; font-size: 14px; }
+.preview-bar strong { font-weight: 600; }
+.preview-bar .btn { margin-left: auto; }
+
+/* ---------- page ---------- */
+main .wrap { padding-block: 28px 64px; display: grid; gap: 24px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-head > div { display: grid; gap: 4px; min-width: 0; }
+.back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; margin-bottom: 6px; }
+.back:hover { color: var(--ink); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.panel-head > div { display: grid; gap: 2px; min-width: 0; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
+
+/* metrics */
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.metric { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px; text-align: left; min-width: 0; align-content: start; }
+.metric b { font-size: 26px; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.metric span { color: var(--muted); font-size: 13px; }
+button.metric { cursor: pointer; font: inherit; color: inherit; }
+button.metric:hover { border-color: var(--ink); }
+.metric.attention { border-color: var(--red); }
+.metric.attention b { color: var(--red-ink); }
+.metric .go { font-size: 12.5px; font-weight: 600; color: var(--ink); display: inline-flex; gap: 4px; align-items: center; margin-top: 4px; }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; line-height: 1; border: 1px solid transparent; border-radius: var(--r); cursor: pointer; text-decoration: none; white-space: nowrap; transition: background 120ms, border-color 120ms, color 120ms; }
+.btn-lg { padding: 13px 20px; font-size: 15px; }
+.btn-md { padding: 10px 14px; font-size: 14px; }
+.btn-sm { padding: 7px 10px; font-size: 13px; border-radius: var(--r-sm); }
+.btn-primary { background: var(--ink); color: #fff; }
+.btn-primary:hover { background: var(--ink-hover); }
+.btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+.btn-secondary:hover { border-color: var(--ink); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--info-tint); }
+.btn-danger { background: var(--surface); color: var(--err); border-color: var(--line-strong); }
+.btn-danger:hover { border-color: var(--err); }
+.btn-danger.armed { background: var(--err); color: #fff; border-color: var(--err); }
+.btn-on-dark { background: #fff; color: var(--ink); }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+label.btn:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+label.btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row.end { justify-content: flex-end; }
+.row.between { justify-content: space-between; }
+
+/* ---------- forms ---------- */
+.form { display: grid; gap: 16px; }
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px 16px; }
+.fields.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.field { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.field > span:first-child, .field legend { font-size: 13px; font-weight: 600; }
+.req { color: var(--red-ink); }
+.help { font-size: 12.5px; color: var(--muted); }
+.error-text { font-size: 12.5px; color: var(--err); font-weight: 600; display: flex; gap: 6px; align-items: center; }
+input[type=text], input[type=email], input[type=date], input[type=number], input[type=password], input[type=search], select, textarea {
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-sm); padding: 9px 11px; font-size: 15px; width: 100%; min-width: 0; color: var(--ink); }
+textarea { resize: vertical; line-height: 1.5; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; border-color: var(--ink); }
+[aria-invalid="true"] { border-color: var(--err) !important; }
+select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 16px) 52%, calc(100% - 11px) 52%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+input[type=checkbox], input[type=radio] { accent-color: var(--ink); width: 16px; height: 16px; }
+input[type=range] { accent-color: var(--ink); width: 100%; }
+.check { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+details.group { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+details.group > summary { list-style: none; cursor: pointer; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+details.group > summary::-webkit-details-marker { display: none; }
+details.group > summary .icon { transition: transform 150ms; margin-left: auto; color: var(--muted); }
+details.group[open] > summary .icon { transform: rotate(180deg); }
+details.group > summary small { font-weight: 500; color: var(--muted); font-size: 12.5px; }
+details.group > .group-body { padding: 4px 14px 16px; display: grid; gap: 14px; }
+
+.drop { border: 1.5px dashed var(--line-strong); border-radius: var(--r); padding: 22px 16px; text-align: center; cursor: pointer; display: grid; gap: 4px; justify-items: center; background: var(--surface-2); transition: border-color 120ms, background 120ms; position: relative; }
+.drop:hover, .drop.over { border-color: var(--ink); background: var(--surface); }
+.drop:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.drop .icon { width: 24px; height: 24px; color: var(--muted); }
+.drop strong { font-weight: 600; }
+.drop small { color: var(--muted); font-size: 13px; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.drop.compact { padding: 14px; grid-auto-flow: column; justify-content: center; align-items: center; gap: 10px; }
+
+/* ---------- route choice + stepper ---------- */
+.choice { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; border: 0; padding: 0; margin: 0; }
+.choice label { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 14px 16px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); cursor: pointer; }
+.choice label:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.choice label:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.choice input { margin-top: 3px; grid-row: span 2; }
+.choice strong { font-weight: 600; }
+.choice small { color: var(--muted); font-size: 13px; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0; list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.steps li { min-width: 0; }
+.steps li + li { border-left: 1px solid var(--line); }
+.steps button { width: 100%; background: none; border: 0; padding: 12px 16px; display: flex; gap: 10px; align-items: center; text-align: left; font-weight: 600; font-size: 14px; color: var(--muted); cursor: default; }
+.steps button.done { cursor: pointer; color: var(--ink); }
+.steps button.done:hover { background: var(--surface-2); }
+.steps .n { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: grid; place-items: center; font-size: 12px; flex: none; font-variant-numeric: tabular-nums; }
+.steps [aria-current="step"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--red); }
+.steps [aria-current="step"] .n { background: var(--ink); border-color: var(--ink); color: #fff; }
+.steps .done .n { background: var(--surface); border-color: var(--ink); color: var(--ink); }
+.steps .label-sub { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+
+.split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.sticky { position: sticky; top: calc(76px + env(safe-area-inset-top, 0px)); }
+.preview-box { border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); overflow: hidden; display: grid; }
+.preview-box canvas, .preview-box img { width: 100%; height: auto; display: block; }
+.preview-box .placeholder { aspect-ratio: 1.414 / 1; display: grid; place-items: center; color: var(--muted); font-size: 13px; padding: 16px; text-align: center; max-width: 100%; }
+.only-mobile { display: none; }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td .sub { display: block; color: var(--muted); font-size: 12.5px; }
+td.actions { text-align: right; white-space: nowrap; }
+td.actions .row { justify-content: flex-end; flex-wrap: nowrap; }
+tr.open > td { background: var(--surface-2); }
+tr.detail > td { background: var(--surface-2); padding: 0 14px 16px; }
+.truncate { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scroll-y { max-height: 420px; overflow: auto; }
+.scroll-y th { position: sticky; top: 0; z-index: 1; }
+
+/* ---------- status ---------- */
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent; }
+.chip.ok { background: var(--ok-tint); color: var(--ok); }
+.chip.warn { background: var(--warn-tint); color: var(--warn); }
+.chip.err { background: var(--err-tint); color: var(--err); }
+.chip.neutral { background: var(--info-tint); color: var(--muted); }
+.chip.new { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; }
+.msg { border-radius: var(--r); padding: 12px 14px; font-size: 14px; display: flex; gap: 10px; align-items: flex-start; border: 1px solid; }
+.msg > .icon { margin-top: 3px; }
+.msg > div { display: grid; gap: 4px; min-width: 0; }
+.msg.info { background: var(--surface-2); border-color: var(--line); }
+.msg.info > .icon { color: var(--muted); }
+.msg.ok { background: var(--ok-tint); border-color: #B7DFC3; }
+.msg.ok > .icon { color: var(--ok); }
+.msg.warn { background: var(--warn-tint); border-color: #F3D19E; }
+.msg.warn > .icon { color: var(--warn); }
+.msg.err { background: var(--err-tint); border-color: #F3B8B3; }
+.msg.err > .icon { color: var(--err); }
+.msg ul { margin: 4px 0 0; padding-left: 18px; }
+.empty { color: var(--muted); font-size: 14px; padding: 28px 16px; text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--r); display: grid; gap: 10px; justify-items: center; background: var(--surface); }
+.empty strong { color: var(--ink); font-weight: 600; }
+.progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--ink); width: 0; transition: width 200ms; }
+
+/* review summary */
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.summary > div { padding: 14px 16px; display: grid; gap: 2px; min-width: 0; }
+.summary > div + div { border-left: 1px solid var(--line); }
+.summary b { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.summary span { font-size: 13px; color: var(--muted); }
+.summary .lead b { color: var(--ink); }
+.dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; font-size: 14px; margin: 0; }
+.dl dt { color: var(--muted); }
+.dl dd { margin: 0; font-weight: 600; min-width: 0; }
+
+/* ---------- adviser portal ---------- */
+.figures { display: flex; gap: 12px; flex-wrap: wrap; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 18px; min-width: 170px; }
+.figure b { display: block; font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.figure span { color: var(--muted); font-size: 13px; }
+.stack td:first-child { min-width: 220px; }
+.cert-title { font-weight: 600; }
+.auth { max-width: 420px; margin: 48px auto; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 28px; display: grid; gap: 18px; }
+.auth .brand svg { width: 26px; height: 29px; }
+
+/* ---------- modal + toast ---------- */
+.modal { position: fixed; inset: 0; background: rgba(17,17,17,.55); display: grid; place-items: center; z-index: 50; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal-inner { background: var(--surface); border-radius: var(--r); max-width: 940px; width: 100%; max-height: 100%; overflow: auto; display: grid; gap: 14px; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.modal canvas, .modal img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: var(--r-sm); display: block; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: var(--r); font-size: 14px; z-index: 60; box-shadow: 0 8px 30px rgba(0,0,0,.25); max-width: calc(100% - 32px); display: flex; gap: 8px; align-items: center; }
+
+/* ---------- insights ---------- */
+.legend { display: flex; gap: 16px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart-scroll { overflow-x: auto; position: relative; padding-top: 4px; }
+.chart { display: block; font-family: var(--font); }
+.chart .ch-grid { stroke: var(--line); stroke-width: 1; }
+.chart .ch-y, .chart .ch-x2 { fill: var(--faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .ch-x { fill: var(--muted); font-size: 11px; }
+.chart .ch-val { fill: var(--ink); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.chart g.bar { outline: none; }
+.chart g.bar:hover path, .chart g.bar:hover rect:not([fill=transparent]), .chart g.bar:focus path, .chart g.bar:focus rect:not([fill=transparent]) { opacity: .82; }
+.ch-tip { position: absolute; width: 220px; background: var(--ink); color: #fff; border-radius: var(--r-sm); padding: 8px 10px; font-size: 12px; white-space: pre-line; pointer-events: none; }
+.meter-cell { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+.meter { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; max-width: 160px; }
+.meter i { display: block; height: 100%; background: var(--ink); border-radius: 0 3px 3px 0; }
+.people-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; padding-top: 12px; }
+
+footer { border-top: 1px solid var(--line); color: var(--faint); font-size: 12px; background: var(--surface); }
+footer .wrap { padding-block: 18px; display: grid; gap: 4px; max-width: 1200px; }
+
+@media (max-width: 1000px) {
+  .split { grid-template-columns: minmax(0,1fr); }
+  .split > .preview-col { display: none; }
+  .only-mobile { display: inline-flex; }
+}
+@media (max-width: 760px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid-2, .choice { grid-template-columns: minmax(0,1fr); }
+  .fields, .fields.two { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .fields .wide { grid-column: 1 / -1; }
+  .summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .summary > div:nth-child(3) { border-left: 0; }
+  .summary > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .steps .label-sub { display: none; }
+  .steps button { padding: 10px; gap: 8px; font-size: 13px; }
+  .brand-name span { display: none; }
+  .topbar .wrap { gap: 12px; }
+  .topbar-end .btn-label { display: none; }
+  /* record tables (adviser certificates, sessions) stack into cards */
+  .stack thead { display: none; }
+  .stack, .stack tbody, .stack tr, .stack td { display: block; }
+  .stack tr { padding: 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, auto)); justify-content: start; gap: 4px 16px; }
+  .stack tr:last-child { border-bottom: 0; }
+  .stack td { padding: 0; border: 0; min-width: 0 !important; text-align: left !important; }
+  .stack td:first-child { grid-column: 1 / -1; }
+  .stack td[data-label] { font-size: 13px; color: var(--muted); }
+  .stack td[data-label]::before { content: attr(data-label) " "; font-weight: 600; color: var(--ink); }
+  .stack td .sub { display: inline; }
+  .stack td:first-child .sub { display: block; }
+  .stack td[data-label] .sub::before { content: " · "; }
+  .stack td.actions { grid-column: 1 / -1; margin-top: 8px; }
+  .stack td.actions:empty { display: none; }
+  .stack td.actions .row { justify-content: flex-start; }
+  .topbar .wrap { flex-wrap: wrap; row-gap: 0; padding-top: 6px; }
+  .nav { order: 3; width: 100%; min-height: 44px; margin: 0 -12px; }
+  .figure { flex: 1 1 0; min-width: 0; }
+}
+@media (max-width: 480px) { .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } .panel { padding: 16px; } .metric b { font-size: 22px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div id="app"></div>
+<div id="live" class="visually-hidden" role="status" aria-live="polite"></div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/pdf.worker.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script>
+<script src="vendor/fontkit.umd.min.js"></script>
+<script>
+(() => {
+"use strict";
+const HUB_MODE = "server"; // "artifact" (claude.ai internal) or "server" (deployable)
+const ICONS = {"cloud-arrow-up":"<path fill-rule=\"evenodd\" d=\"M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z\"/><path d=\"M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z\"/>","download":"<path d=\"M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5\"/><path d=\"M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z\"/>","file-earmark-pdf":"<path d=\"M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z\"/><path d=\"M4.603 14.087a.8.8 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.7 7.7 0 0 1 1.482-.645 20 20 0 0 0 1.062-2.227 7.3 7.3 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a11 11 0 0 0 .98 1.686 5.8 5.8 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.86.86 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.7 5.7 0 0 1-.911-.95 11.7 11.7 0 0 0-1.997.406 11.3 11.3 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.8.8 0 0 1-.58.029m1.379-1.901q-.25.115-.459.238c-.328.194-.541.383-.647.547-.094.145-.096.25-.04.361q.016.032.026.044l.035-.012c.137-.056.355-.235.635-.572a8 8 0 0 0 .45-.606m1.64-1.33a13 13 0 0 1 1.01-.193 12 12 0 0 1-.51-.858 21 21 0 0 1-.5 1.05zm2.446.45q.226.245.435.41c.24.19.407.253.498.256a.1.1 0 0 0 .07-.015.3.3 0 0 0 .094-.125.44.44 0 0 0 .059-.2.1.1 0 0 0-.026-.063c-.052-.062-.2-.152-.518-.209a4 4 0 0 0-.612-.053zM8.078 7.8a7 7 0 0 0 .2-.828q.046-.282.038-.465a.6.6 0 0 0-.032-.198.5.5 0 0 0-.145.04c-.087.035-.158.106-.196.283-.04.192-.03.469.046.822q.036.167.09.346z\"/>","person":"<path d=\"M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z\"/>","people":"<path d=\"M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4\"/>","search":"<path d=\"M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0\"/>","box-arrow-right":"<path fill-rule=\"evenodd\" d=\"M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z\"/><path fill-rule=\"evenodd\" d=\"M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z\"/>","trash3":"<path d=\"M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5\"/>","check-circle":"<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/><path d=\"m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05\"/>","exclamation-triangle":"<path d=\"M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z\"/><path d=\"M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z\"/>","question-circle":"<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/><path d=\"M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94\"/>","arrow-right":"<path fill-rule=\"evenodd\" d=\"M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8\"/>","envelope":"<path d=\"M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z\"/>","file-earmark-spreadsheet":"<path d=\"M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z\"/>","x-lg":"<path d=\"M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z\"/>","award":"<path d=\"M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z\"/><path d=\"M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z\"/>","calendar3":"<path d=\"M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z\"/><path d=\"M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2\"/>","clock":"<path d=\"M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z\"/><path d=\"M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0\"/>","eye":"<path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z\"/><path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0\"/>","arrow-left":"<path fill-rule=\"evenodd\" d=\"M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8\"/>","chevron-down":"<path fill-rule=\"evenodd\" d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708\"/>","plus-lg":"<path fill-rule=\"evenodd\" d=\"M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2\"/>","info-circle":"<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/><path d=\"m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0\"/>","x-circle":"<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/><path d=\"M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708\"/>","check2":"<path d=\"M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0\"/>","check-circle-fill":"<path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z\"/>","exclamation-circle":"<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/><path d=\"M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z\"/>","file-earmark-arrow-up":"<path d=\"M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707z\"/><path d=\"M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z\"/>","inbox":"<path d=\"M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z\"/>","person-check":"<path d=\"M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4\"/><path d=\"M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z\"/>"};
+const P1_MARK = '<svg viewBox="0 0 277.25 306.69" aria-label="P1" role="img"><path fill="currentColor" d="M191.17,0H60.56c-.74,0-1.38.52-1.52,1.25L.03,304.85c-.19.95.55,1.84,1.52,1.84h80.75c.74,0,1.38-.53,1.52-1.25l18.78-96.64,16.23-83.51c.19-.95-.55-1.84-1.52-1.84h-42.06c-.97,0-1.7-.89-1.52-1.84l4.22-21.71c.11-.58.55-1.04,1.13-1.18,27.04-6.73,52.12-22.71,70.77-44.18.29-.33.7-.52,1.14-.52h39.62c.97,0,1.7.89,1.52,1.84l-13.14,67.6-16.05,82.56c-.2,1.04.68,1.99,1.73,1.86,52.4-6.8,100.31-50.52,110.6-103.46C286.49,46.74,248.83,0,191.17,0Z"/></svg>';
+
+const pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
+if (pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+
+// ---------- helpers ----------
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const icon = (n) => `<svg class="icon" viewBox="0 0 16 16" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const normEmail = (e) => String(e || "").trim().toLowerCase();
+const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const normText = (s) => " " + String(s || "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9@.]+/g, " ").replace(/\s+/g, " ").trim() + " ";
+const normName = (s) => normText(s).replace(/[@.]/g, " ").replace(/\s+/g, " ");
+const fmtDate = (d) => { if (!d) return "Date not set"; const x = new Date(d + "T00:00:00"); return isNaN(x) ? d : x.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); };
+const fmtHours = (h) => { const n = Number(h) || 0; return (Math.round(n * 100) / 100).toString(); };
+const safeFile = (s) => String(s || "").replace(/\s*:\s*/g, " - ").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 120);
+const plural = (n, w, p) => `${n} ${n === 1 ? w : (p || w + "s")}`;
+
+// ---------- CSV ----------
+function parseCSV(text) {
+  text = text.replace(/^﻿/, "");
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += c;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c !== ""));
+}
+function csvToAdvisers(text) {
+  const rows = parseCSV(text); if (!rows.length) return { people: [], problems: ["The file is empty."] };
+  const head = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g, ""));
+  const find = (...keys) => head.findIndex(h => keys.includes(h));
+  let iEmail = find("email", "emailaddress", "email1", "attendeeemail", "e");
+  let iName = find("name", "fullname", "attendeename", "attendee", "delegatename");
+  const iFirst = find("firstname", "forename", "first", "givenname");
+  const iLast = find("lastname", "surname", "last", "familyname");
+  const iFirm = find("firm", "company", "companyname", "organisation", "organization", "firmname");
+  let body = rows.slice(1);
+  if (iEmail < 0 && iName < 0 && iFirst < 0) { // no header row: guess
+    body = rows; iEmail = rows[0].findIndex(c => c.includes("@")); iName = rows[0].findIndex((c, i) => i !== iEmail && c);
+  }
+  const people = [], problems = [], seen = new Set();
+  body.forEach((r, n) => {
+    const email = normEmail(r[iEmail]);
+    let name = iName >= 0 ? r[iName] : [r[iFirst], r[iLast]].filter(Boolean).join(" ");
+    name = (name || "").replace(/\s+/g, " ").trim();
+    const line = n + (body === rows ? 1 : 2);
+    if (!validEmail(email)) { problems.push(`Row ${line}: "${r[iEmail] || "(blank)"}" is not a valid email.`); return; }
+    if (!name) { problems.push(`Row ${line}: no name for ${email}.`); return; }
+    if (seen.has(email)) { problems.push(`Row ${line}: ${email} appears more than once, kept the first.`); return; }
+    seen.add(email);
+    people.push({ email, name, firm: iFirm >= 0 ? (r[iFirm] || "") : "" });
+  });
+  return { people, problems };
+}
+
+// ---------- PDF ----------
+async function pdfText(buf) {
+  if (!pdfjsLib) return "";
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)), isEvalSupported: false }).promise;
+  let out = "";
+  for (let p = 1; p <= Math.min(doc.numPages, 3); p++) {
+    const page = await doc.getPage(p); const tc = await page.getTextContent();
+    out += " " + tc.items.map(i => i.str).join(" ");
+  }
+  doc.destroy(); return out;
+}
+async function renderInto(container, blob, contentType, width) {
+  try {
+    if (contentType && contentType.startsWith("image/")) {
+      const img = new Image(); img.alt = "Certificate"; img.src = URL.createObjectURL(blob); container.replaceChildren(img); return;
+    }
+    const buf = await blob.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise;
+    const page = await doc.getPage(1);
+    const v1 = page.getViewport({ scale: 1 });
+    const scale = (width * (window.devicePixelRatio || 1)) / v1.width;
+    const vp = page.getViewport({ scale });
+    const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    container.replaceChildren(c); doc.destroy();
+  } catch (e) { container.innerHTML = icon("file-earmark-pdf"); }
+}
+
+// ---------- certificate generator ----------
+// A4 landscape in PDF points. Background art is painted on a canvas (gradients, signal line, P1 mark),
+// then all text is drawn as real, selectable text in Manrope with pdf-lib.
+const PAGE_W = 841.89, PAGE_H = 595.28;
+const P1_PATH = P1_MARK.match(/ d="([^"]+)"/)[1];
+const FOOTER_LEGAL = "P1 Investment Management and P1 Platform are trading names of P1 Investment Services Limited. P1 Investment Services Limited is authorised and regulated by the Financial Conduct Authority under registration number 752005.";
+const GEN = { fonts: null, bg: new Map(), tpl: new Map() };
+const THEMES = {
+  dark:  { bg: "#000000", fg: [1, 1, 1], muted: [0.66, 0.69, 0.80], label: [0.57, 0.64, 0.87], rule: [0.57, 0.64, 0.87, 0.28], mark: "#FFFFFF" },
+  light: { bg: "#FFFFFF", fg: [0, 0, 0], muted: [0.33, 0.36, 0.45], label: [0.133, 0.275, 0.729], rule: [0.133, 0.275, 0.729, 0.25], mark: "#000000" },
+};
+async function genFonts() {
+  if (GEN.fonts) return GEN.fonts;
+  const get = (w) => fetch(`vendor/fonts/Manrope_${w}.ttf`).then(r => { if (!r.ok) throw new Error("Certificate font did not load."); return r.arrayBuffer(); });
+  const [regular, medium, semibold] = await Promise.all([get("400Regular"), get("500Medium"), get("600SemiBold")]);
+  return (GEN.fonts = { regular, medium, semibold });
+}
+async function backgroundJpeg(theme) {
+  if (GEN.bg.has(theme)) return GEN.bg.get(theme);
+  const t = THEMES[theme], s = 2.4, W = Math.round(PAGE_W * s), H = Math.round(PAGE_H * s);
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  g.fillStyle = t.bg; g.fillRect(0, 0, W, H);
+  const glow = (x, y, rx, ry, a) => { g.save(); g.translate(x, y); g.scale(1, ry / rx); const r = g.createRadialGradient(0, 0, 0, 0, 0, rx);
+    r.addColorStop(0, `rgba(34,70,186,${a})`); r.addColorStop(1, "rgba(34,70,186,0)"); g.fillStyle = r; g.fillRect(-rx, -rx, rx * 2, rx * 2); g.restore(); };
+  if (theme === "dark") { glow(W * 0.55, -H * 0.12, W * 0.62, H * 0.62, 0.55); glow(W * 0.92, H * 1.08, W * 0.45, H * 0.45, 0.32); }
+  else { glow(W * 0.55, -H * 0.18, W * 0.6, H * 0.45, 0.10); }
+  // signal line: a single luminous trace rising from the bottom-left corner, kept clear of the text
+  g.save(); g.lineCap = "round";
+  const line = (w, col, blur) => { g.beginPath(); g.moveTo(W * 0.5, H * 1.02); g.bezierCurveTo(W * 0.68, H * 0.96, W * 0.84, H * 0.86, W + 20, H * 0.73); g.lineWidth = w; g.strokeStyle = col; g.shadowColor = "#4E6BC8"; g.shadowBlur = blur; g.stroke(); };
+  if (theme === "dark") { line(9 * s, "rgba(24,49,130,.35)", 40 * s); line(2 * s, "#2246BA", 14 * s); line(0.8 * s, "#91A3DD", 4 * s); }
+  else { line(1.4 * s, "rgba(34,70,186,.55)", 0); }
+  g.restore();
+  // inner frame
+  g.strokeStyle = theme === "dark" ? "rgba(145,163,221,.22)" : "rgba(34,70,186,.22)"; g.lineWidth = 1 * s;
+  g.strokeRect(22 * s, 22 * s, W - 44 * s, H - 44 * s);
+  // P1 mark, top left
+  const mh = 34 * s, k = mh / 306.69; g.save(); g.translate(56 * s, 50 * s); g.scale(k, k); g.fillStyle = t.mark; g.fill(new Path2D(P1_PATH)); g.restore();
+  const bytes = await new Promise(res => c.toBlob(b => b.arrayBuffer().then(res), "image/jpeg", 0.92));
+  GEN.bg.set(theme, bytes); return bytes;
+}
+function fitSize(font, text, max, size, min) { while (size > min && font.widthOfTextAtSize(text, size) > max) size -= 0.5; return size; }
+function wrapLines(font, text, size, max, maxLines) {
+  const words = String(text || "").split(/\s+/).filter(Boolean), lines = []; let cur = "";
+  for (const w of words) { const t = cur ? cur + " " + w : w; if (font.widthOfTextAtSize(t, size) <= max || !cur) cur = t; else { lines.push(cur); cur = w; } }
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines) { const keep = lines.slice(0, maxLines); let last = keep[maxLines - 1]; while (last && font.widthOfTextAtSize(last + "…", size) > max) last = last.slice(0, -1); keep[maxLines - 1] = last.trimEnd() + "…"; return keep; }
+  return lines;
+}
+function spaced(page, text, { x, y, size, font, color, tracking = 1.2, align = "left" }) {
+  const w = [...text].reduce((s, ch) => s + font.widthOfTextAtSize(ch, size) + tracking, -tracking);
+  let cx = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+  for (const ch of text) { page.drawText(ch, { x: cx, y, size, font, color }); cx += font.widthOfTextAtSize(ch, size) + tracking; }
+}
+const cpdLine = (s) => { const h = Number(s.hours) || 0; return `${fmtHours(h)} ${h === 1 ? "hour" : "hours"}${s.cpdType ? " " + s.cpdType.toLowerCase() : ""} CPD`; };
+
+async function generateCertificate(session, person, certId, templateBlob) {
+  const { PDFDocument, rgb } = window.PDFLib;
+  const fonts = await genFonts();
+  const pdf = await PDFDocument.create(); pdf.registerFontkit(window.fontkit);
+  pdf.setTitle(`CPD certificate: ${session.title} - ${person.name}`); pdf.setAuthor("P1 Investment Services Limited"); pdf.setCreator("P1 CPD Certificate Hub");
+  const F = { r: await pdf.embedFont(fonts.regular, { subset: true }), m: await pdf.embedFont(fonts.medium, { subset: true }), s: await pdf.embedFont(fonts.semibold, { subset: true }) };
+  const C = (a) => rgb(a[0], a[1], a[2]);
+
+  if (session.theme === "custom" && templateBlob) {
+    // Your own design as the background; name and details are overlaid
+    let page, W, H;
+    const bytes = await templateBlob.arrayBuffer(), type = templateBlob.type || "";
+    if (/pdf/.test(type)) { const [emb] = await pdf.embedPdf(bytes, [0]); W = emb.width; H = emb.height; page = pdf.addPage([W, H]); page.drawPage(emb, { x: 0, y: 0, width: W, height: H }); }
+    else { const img = /png/.test(type) ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes); W = PAGE_W; H = W * img.height / img.width; page = pdf.addPage([W, H]); page.drawImage(img, { x: 0, y: 0, width: W, height: H }); }
+    const fg = session.textColour === "light" ? rgb(1, 1, 1) : rgb(0, 0, 0);
+    const sub = session.textColour === "light" ? rgb(0.85, 0.87, 0.93) : rgb(0.25, 0.27, 0.33);
+    const k = W / PAGE_W, cx = W / 2, top = H * (1 - (Number(session.namePos) || 45) / 100);
+    const ns = fitSize(F.s, person.name, W * 0.8, 40 * k, 20 * k);
+    page.drawText(person.name, { x: cx - F.s.widthOfTextAtSize(person.name, ns) / 2, y: top - ns * 0.35, size: ns, font: F.s, color: fg });
+    if (session.showDetails !== false) {
+      let y = top - ns * 0.35 - 30 * k;
+      for (const l of wrapLines(F.m, session.title, 16 * k, W * 0.75, 2)) { page.drawText(l, { x: cx - F.m.widthOfTextAtSize(l, 16 * k) / 2, y, size: 16 * k, font: F.m, color: fg }); y -= 21 * k; }
+      const d = `${fmtDate(session.date)}  ·  ${cpdLine(session)}`;
+      page.drawText(d, { x: cx - F.r.widthOfTextAtSize(d, 11 * k) / 2, y: y - 4 * k, size: 11 * k, font: F.r, color: sub });
+    }
+    return new Blob([await pdf.save()], { type: "application/pdf" });
+  }
+
+  const theme = THEMES[session.theme] || THEMES.dark;
+  const page = pdf.addPage([PAGE_W, PAGE_H]);
+  page.drawImage(await pdf.embedJpg(await backgroundJpeg(session.theme === "light" ? "light" : "dark")), { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+  const L = 72, R = PAGE_W - 72, maxW = R - L, Y = (top) => PAGE_H - top;
+  spaced(page, "CERTIFICATE OF CPD", { x: R, y: Y(66), size: 9.5, font: F.s, color: C(theme.label), tracking: 1.6, align: "right" });
+
+  let top = 168;
+  page.drawText("This is to certify that", { x: L, y: Y(top), size: 13, font: F.r, color: C(theme.muted) });
+  top += 52;
+  const ns = fitSize(F.s, person.name, maxW, 46, 26);
+  page.drawText(person.name, { x: L - 1.5, y: Y(top), size: ns, font: F.s, color: C(theme.fg) });
+  top += 34;
+  page.drawText(`completed the following ${session.kind ? session.kind.toLowerCase() : "session"}`, { x: L, y: Y(top), size: 13, font: F.r, color: C(theme.muted) });
+  top += 32;
+  for (const l of wrapLines(F.m, session.title, 23, maxW, 2)) { page.drawText(l, { x: L, y: Y(top), size: 23, font: F.m, color: C(theme.fg) }); top += 29; }
+
+  // detail columns
+  top += 16;
+  const cols = [["DATE", fmtDate(session.date)], ["CPD", cpdLine(session)], ["FORMAT", session.kind || "Webinar"]];
+  if (session.speakers) cols.push(["PRESENTED BY", session.speakers]);
+  const colW = maxW / cols.length;
+  page.drawLine({ start: { x: L, y: Y(top - 14) }, end: { x: R, y: Y(top - 14) }, thickness: 0.6, color: C(theme.rule), opacity: theme.rule[3] });
+  cols.forEach(([lab, val], i) => {
+    const x = L + i * colW;
+    spaced(page, lab, { x, y: Y(top + 4), size: 8, font: F.s, color: C(theme.label), tracking: 1.2 });
+    const lines = wrapLines(F.m, val, 12.5, colW - 18, 2);
+    lines.forEach((l, j) => page.drawText(l, { x, y: Y(top + 23 + j * 16), size: 12.5, font: F.m, color: C(theme.fg) }));
+  });
+  top += 23 + 16 * Math.max(...cols.map(([, v]) => wrapLines(F.m, v, 12.5, colW - 18, 2).length));
+
+  // learning outcomes
+  const outcomes = String(session.outcomes || "").split(/\n+/).map(s => s.replace(/^[-•*\s]+/, "").trim()).filter(Boolean).slice(0, 4);
+  if (outcomes.length) {
+    top += 18;
+    spaced(page, "LEARNING OUTCOMES", { x: L, y: Y(top), size: 8, font: F.s, color: C(theme.label), tracking: 1.2 });
+    top += 17;
+    for (const o of outcomes) {
+      const ls = wrapLines(F.r, o, 10.5, maxW - 14, 2);
+      page.drawText("•", { x: L, y: Y(top), size: 10.5, font: F.r, color: C(theme.label) });
+      ls.forEach((l, j) => page.drawText(l, { x: L + 13, y: Y(top + j * 14), size: 10.5, font: F.r, color: C(theme.muted) }));
+      top += 14 * ls.length + 3;
+      if (top > 470) break;
+    }
+  }
+
+  // signature and reference
+  const sy = 506;
+  if (session.signatory) {
+    page.drawLine({ start: { x: L, y: Y(sy - 18) }, end: { x: L + 190, y: Y(sy - 18) }, thickness: 0.6, color: C(theme.rule), opacity: theme.rule[3] * 2 });
+    page.drawText(session.signatory, { x: L, y: Y(sy), size: 11, font: F.s, color: C(theme.fg) });
+    if (session.signatoryRole) page.drawText(session.signatoryRole, { x: L, y: Y(sy + 14), size: 9.5, font: F.r, color: C(theme.muted) });
+  }
+  const ref = `Certificate ref ${String(certId).toUpperCase().slice(0, 12)}`;
+  page.drawText(ref, { x: R - F.r.widthOfTextAtSize(ref, 8.5), y: Y(98), size: 8.5, font: F.r, color: C(theme.muted) });
+  const iss = `Issued ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
+  page.drawText(iss, { x: R - F.r.widthOfTextAtSize(iss, 8.5), y: Y(84), size: 8.5, font: F.r, color: C(theme.muted) });
+  const legal = wrapLines(F.r, FOOTER_LEGAL, 6.5, maxW * 0.5, 3);
+  legal.forEach((l, j) => page.drawText(l, { x: L, y: Y(541 + j * 9), size: 6.5, font: F.r, color: C(theme.muted), opacity: 0.85 }));
+  return new Blob([await pdf.save()], { type: "application/pdf" });
+}
+
+// ---------- name matching ----------
+function nameVariants(name) {
+  const t = normName(name).trim().split(" ").filter(Boolean);
+  const v = new Set();
+  if (t.length) v.add(t.join(" "));
+  if (t.length > 2) v.add(t[0] + " " + t[t.length - 1]);           // drop middle names
+  if (t.length >= 2) v.add(t[t.length - 1] + " " + t[0]);           // "Smith, Jane"
+  return [...v].filter(x => x.includes(" "));
+}
+function matchCertificate(text, fileName, advisers) {
+  const hay = normText(text), fileHay = normName(fileName.replace(/\.[a-z0-9]+$/i, "").replace(/[_\-]+/g, " "));
+  // 1. email printed on certificate
+  const byEmail = advisers.filter(a => hay.includes(" " + normEmail(a.email) + " ") || hay.includes(normEmail(a.email)));
+  if (byEmail.length === 1) return { status: "matched", adviserId: byEmail[0].id, method: "email", candidates: [] };
+  const nameHay = normName(text);
+  const scan = (h) => {
+    const hits = [];
+    for (const a of advisers) for (const v of nameVariants(a.name)) if (h.includes(" " + v + " ")) { hits.push({ a, v }); break; }
+    // drop hits whose matched phrase sits inside a longer hit (e.g. "Ann Lee" inside "Mary Ann Lee")
+    return hits.filter(h1 => !hits.some(h2 => h2 !== h1 && h2.v.length > h1.v.length && h2.v.includes(h1.v)));
+  };
+  for (const [h, method] of [[nameHay, "name"], [fileHay, "filename"]]) {
+    const hits = scan(h);
+    if (hits.length === 1) return { status: "matched", adviserId: hits[0].a.id, method, candidates: [] };
+    if (hits.length > 1) return { status: "ambiguous", adviserId: "", method, candidates: hits.map(x => x.a.id) };
+  }
+  return { status: "unmatched", adviserId: "", method: "", candidates: [] };
+}
+
+// =====================================================================
+// Storage back ends. Same interface; the UI never knows which it uses.
+// =====================================================================
+function ArtifactStore() {
+  let db, assets, downloads, onChange = () => {};
+  const data = { advisers: [], certs: [], sessions: [] };
+  const ready = { advisers: false, certs: false, sessions: false };
+  return {
+    mode: "artifact",
+    label: "Internal workspace on claude.ai",
+    async init(cb) {
+      onChange = cb;
+      const c = window.claude;
+      if (!c || !c.use) return { error: "Open this page on claude.ai to use the hub. Storage is provided by the claude.ai workspace." };
+      [db, assets, downloads] = await Promise.all([c.use("db"), c.use("assets"), c.use("downloads")]);
+      if (!db) return { error: "The hub could not reach its storage. Make sure you are signed in to claude.ai and have edit access to this page." };
+      const allReady = () => ready.advisers && ready.certs && ready.sessions;
+      const timer = setTimeout(() => { if (!allReady()) onChange({ slow: true }); }, 10000);
+      const sub = (name, key) => db.collection(name).onSnapshot(qs => {
+        data[key] = qs.docs.map(d => ({ id: d.id, ...d.data() })); ready[key] = true;
+        if (allReady()) clearTimeout(timer);
+        onChange({});
+      }, err => onChange({ error: "Storage error: " + (err && err.message || err && err.code || "unknown") }));
+      sub("advisers", "advisers"); sub("certificates", "certs"); sub("sessions", "sessions");
+      return { admin: true, canUpload: !!assets };
+    },
+    loaded: () => ready.advisers && ready.certs && ready.sessions,
+    advisers: () => data.advisers,
+    certs: () => data.certs,
+    sessions: () => data.sessions,
+    async saveSession(sess) {
+      const { id, ...body } = sess; const sid = id || uid();
+      if (id) await db.doc("sessions/" + sid).update({ ...body, updatedAt: new Date().toISOString() });
+      else await db.doc("sessions/" + sid).set({ ...body, createdAt: new Date().toISOString() });
+      return sid;
+    },
+    async uploadTemplate(file) {
+      if (!assets) throw new Error("Only editors of this page can upload templates.");
+      const up = await assets.upload(file, { type: file.type || (/\.pdf$/i.test(file.name) ? "application/pdf" : /\.png$/i.test(file.name) ? "image/png" : "image/jpeg") });
+      return { templateFileId: up.id, templateType: up.contentType };
+    },
+    async templateBlob(sess) { const r = await fetch("/_blob/" + sess.templateFileId); if (!r.ok) throw new Error("Could not load the certificate template."); return new Blob([await r.arrayBuffer()], { type: sess.templateType }); },
+    async importAdvisers(people) {
+      let added = 0, updated = 0; const ids = {};
+      const byEmail = new Map(data.advisers.map(a => [normEmail(a.email), a]));
+      for (const p of people) {
+        const ex = byEmail.get(p.email);
+        if (ex) { ids[p.email] = ex.id; if (ex.name !== p.name || (p.firm && ex.firm !== p.firm)) { await db.doc("advisers/" + ex.id).update({ name: p.name, firm: p.firm || ex.firm || "" }); updated++; } }
+        else { const id = uid(); ids[p.email] = id; await db.doc("advisers/" + id).set({ email: p.email, name: p.name, firm: p.firm || "", createdAt: new Date().toISOString() }); added++; }
+      }
+      return { added, updated, ids };
+    },
+    async deleteAdviser(id) {
+      for (const c of data.certs.filter(c => c.adviserId === id)) await db.doc("certificates/" + c.id).update({ adviserId: "" });
+      await db.doc("advisers/" + id).delete();
+    },
+    async addCertificate(file, meta) {
+      if (!assets) throw new Error("Only editors of this page can upload certificates.");
+      const type = file.type || (/\.pdf$/i.test(file.name) ? "application/pdf" : "");
+      const up = await assets.upload(file, type ? { type } : undefined);
+      const { id: given, ...rest } = meta; const id = given || uid(); meta = rest;
+      await db.doc("certificates/" + id).set({ ...meta, fileId: up.id, fileName: file.name, contentType: up.contentType, sizeBytes: up.sizeBytes, uploadedAt: new Date().toISOString() });
+    },
+    async assign(id, adviserId) { await db.doc("certificates/" + id).update({ adviserId: adviserId || "", matchMethod: adviserId ? "manual" : "" }); },
+    async deleteCertificate(cert) { await db.doc("certificates/" + cert.id).delete(); try { if (assets && cert.fileId) await assets.delete(cert.fileId); } catch (e) {} },
+    async deleteSession({ id, certs }) {
+      for (const c of certs) await this.deleteCertificate(c);
+      if (id) { const sess = data.sessions.find(x => x.id === id); await db.doc("sessions/" + id).delete(); try { if (assets && sess && sess.templateFileId) await assets.delete(sess.templateFileId); } catch (e) {} }
+    },
+    async fileBlob(cert) { const r = await fetch("/_blob/" + cert.fileId); if (!r.ok) throw new Error("Could not load the file."); return r.blob(); },
+    async save(filename, blob) {
+      if (!downloads) throw new Error("Downloads are not available in this view.");
+      await downloads.save({ filename, data: blob });
+    },
+    // Adviser preview: looks the adviser up locally (owner-only data)
+    loginMode: "email",
+    async login(email) {
+      const a = data.advisers.find(x => normEmail(x.email) === normEmail(email));
+      if (!a) throw new Error("We couldn't find that email. Check it matches the one you registered with for our webinars.");
+      return { adviser: a };
+    },
+    async verify() { throw new Error("Not used in preview"); },
+    async myCertificates(adviser) { return data.certs.filter(c => c.adviserId === adviser.id); },
+    async logout() {},
+  };
+}
+
+function ServerStore() {
+  let onChange = () => {};
+  const data = { advisers: [], certs: [], sessions: [] };
+  let loaded = false;
+  const api = async (path, opts = {}) => {
+    const r = await fetch(path, { credentials: "same-origin", ...opts, headers: { ...(opts.body && !(opts.body instanceof Blob) ? { "Content-Type": "application/json" } : {}), ...(opts.headers || {}) } });
+    const isJson = (r.headers.get("content-type") || "").includes("json");
+    const body = isJson ? await r.json() : null;
+    if (!r.ok) { const e = new Error((body && body.error) || "Something went wrong (" + r.status + ")."); e.status = r.status; throw e; }
+    return body;
+  };
+  const refresh = async () => {
+    const [a, c, s] = await Promise.all([api("/api/admin/advisers"), api("/api/admin/certificates"), api("/api/admin/sessions")]);
+    data.advisers = a.advisers; data.certs = c.certificates; data.sessions = s.sessions; loaded = true; onChange({});
+  };
+  const store = {
+    mode: "server",
+    label: "",
+    loginMode: "email",
+    async init(cb) {
+      onChange = cb;
+      const cfg = await api("/api/config"); store.loginMode = cfg.loginMode;
+      const me = await api("/api/me");
+      store.session = me;
+      if (me.admin) await refresh();
+      return { admin: !!me.admin, adviser: me.adviser || null, canUpload: true };
+    },
+    async adminLogin(password) { await api("/api/admin/login", { method: "POST", body: JSON.stringify({ password }) }); await refresh(); },
+    loaded: () => loaded,
+    advisers: () => data.advisers,
+    certs: () => data.certs,
+    sessions: () => data.sessions,
+    async saveSession(sess) { const r = await api("/api/admin/sessions", { method: "POST", body: JSON.stringify(sess) }); await refresh(); return r.id; },
+    async uploadTemplate(file) { const r = await api("/api/admin/templates", { method: "POST", body: file, headers: { "Content-Type": file.type || "application/pdf" } }); return r; },
+    async templateBlob(sess) { const r = await fetch("/api/admin/templates/" + sess.templateFileId, { credentials: "same-origin" }); if (!r.ok) throw new Error("Could not load the certificate template."); return r.blob(); },
+    async importAdvisers(people, opts = {}) { const r = await api("/api/admin/advisers/import", { method: "POST", body: JSON.stringify({ advisers: people }) }); if (!opts.noRefresh) await refresh(); return r; },
+    async deleteAdviser(id) { await api("/api/admin/advisers/" + id, { method: "DELETE" }); await refresh(); },
+    async addCertificate(file, meta) {
+      await api("/api/admin/certificates?meta=" + encodeURIComponent(JSON.stringify({ ...meta, fileName: file.name })), { method: "POST", body: file, headers: { "Content-Type": file.type || "application/pdf" } });
+    },
+    async afterBatch() { await refresh(); },
+    async assign(id, adviserId) { await api("/api/admin/certificates/" + id, { method: "PATCH", body: JSON.stringify({ adviserId: adviserId || "" }) }); await refresh(); },
+    async deleteCertificate(cert) { await api("/api/admin/certificates/" + cert.id, { method: "DELETE" }); await refresh(); },
+    async deleteSession({ id, certs }) {
+      if (id) await api("/api/admin/sessions/" + id, { method: "DELETE" });   // the server removes the session's certificates too
+      for (const c of certs.filter(c => c.sessionId !== id || !id)) await api("/api/admin/certificates/" + c.id, { method: "DELETE" });
+      await refresh();
+    },
+    async fileBlob(cert) { const r = await fetch("/api/certificates/" + cert.id + "/file", { credentials: "same-origin" }); if (!r.ok) throw new Error("Could not load the file."); return r.blob(); },
+    async save(filename, blob) { const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = u; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); },
+    async login(email) { return api("/api/auth/request", { method: "POST", body: JSON.stringify({ email }) }); },
+    async verify(email, code) { return api("/api/auth/verify", { method: "POST", body: JSON.stringify({ email, code }) }); },
+    async myCertificates() { return (await api("/api/me/certificates")).certificates; },
+    async logout() { await api("/api/auth/logout", { method: "POST" }); },
+  };
+  return store;
+}
+
+
+// ---------- Insights ----------
+// Attendance is counted from issued certificates: one certificate = one adviser at one session.
+const PERSONAL_DOMAINS = new Set(["gmail.com","googlemail.com","hotmail.com","hotmail.co.uk","outlook.com","outlook.co.uk","live.com","live.co.uk","msn.com","yahoo.com","yahoo.co.uk","ymail.com","icloud.com","me.com","mac.com","aol.com","aol.co.uk","btinternet.com","btopenworld.com","sky.com","virginmedia.com","ntlworld.com","talktalk.net","tiscali.co.uk","blueyonder.co.uk","protonmail.com","proton.me","gmx.com","gmx.co.uk","mail.com","zoho.com","fastmail.com"]);
+const INTERNAL_DOMAINS = new Set(["p1-im.co.uk","ps1.co.uk","ps1capital.co.uk","prydis.com","financialsolutions.co.uk","financialsolutions.com","p1investmentservices.co.uk"]);
+const domainOf = (email) => String(email || "").split("@")[1]?.toLowerCase().trim() || "";
+const PERIODS = [["all", "All time"], ["12", "Last 12 months"], ["6", "Last 6 months"], ["3", "Last 3 months"]];
+
+function firmKeyOf(a) {
+  const d = domainOf(a.email);
+  if (INTERNAL_DOMAINS.has(d)) return { key: "internal", internal: true, domain: d };
+  if (PERSONAL_DOMAINS.has(d)) {
+    const f = (a.firm || "").trim();
+    return f ? { key: "name:" + normText(f).trim(), domain: "", personal: true } : { key: "personal", domain: "", personal: true };
+  }
+  return { key: "domain:" + d, domain: d };
+}
+
+function computeInsights() {
+  const I = S.ins, advisers = store.advisers(), certs = store.certs();
+  const advById = new Map(advisers.map(a => [a.id, a]));
+  const saved = new Map(store.sessions().map(x => [x.id, x]));
+  const cutoff = I.period === "all" ? "" : (() => { const d = new Date(); d.setMonth(d.getMonth() - Number(I.period)); return d.toISOString().slice(0, 10); })();
+
+  // sessions
+  const sessions = new Map();
+  for (const c of certs) {
+    const a = advById.get(c.adviserId); if (!a) continue;
+    const fk = firmKeyOf(a); if (fk.internal && !I.includeInternal) continue;
+    const key = c.sessionId && saved.has(c.sessionId) ? c.sessionId : "t:" + (c.eventTitle || "") + "|" + (c.eventDate || "");
+    let s = sessions.get(key);
+    if (!s) { s = { key, title: c.eventTitle || "Untitled", date: c.eventDate || "", kind: c.eventKind || "", hours: Number(c.cpdHours) || 0, people: new Set() }; sessions.set(key, s); }
+    s.people.add(a.id);
+  }
+  const allSessions = [...sessions.values()].sort((x, y) => (x.date || "").localeCompare(y.date || "") || x.title.localeCompare(y.title));
+  // first attendance per adviser across ALL time (so "new" means first ever, even when a period filter is on)
+  const firstSeen = new Map(), sessionIndex = new Map(allSessions.map((s, i) => [s.key, i]));
+  allSessions.forEach((s, i) => s.people.forEach(id => { if (!firstSeen.has(id)) firstSeen.set(id, i); }));
+  allSessions.forEach((s, i) => { s.newCount = [...s.people].filter(id => firstSeen.get(id) === i).length; s.returning = s.people.size - s.newCount; });
+  const inPeriod = allSessions.filter(s => !cutoff || (s.date && s.date >= cutoff));
+  const periodKeys = new Set(inPeriod.map(s => s.key));
+
+  // people
+  const people = new Map();
+  for (const s of allSessions) for (const id of s.people) {
+    const a = advById.get(id); let p = people.get(id);
+    if (!p) { p = { a, fk: firmKeyOf(a), all: [], period: [] }; people.set(id, p); }
+    p.all.push(s); if (periodKeys.has(s.key)) p.period.push(s);
+  }
+  const lastIdx = allSessions.length - 1;
+  for (const p of people.values()) {
+    p.count = p.period.length; p.total = p.all.length;
+    p.first = p.all[0]; p.last = p.all[p.all.length - 1];
+    p.sinceLast = lastIdx - sessionIndex.get(p.last.key);
+    p.hours = p.period.reduce((t, s) => t + s.hours, 0);
+  }
+  const active = [...people.values()].filter(p => p.count > 0);
+
+  // firms
+  const firms = new Map();
+  for (const p of active) {
+    let f = firms.get(p.fk.key);
+    if (!f) { f = { key: p.fk.key, domain: p.fk.domain, personal: !!p.fk.personal, internal: !!p.fk.internal, names: new Map(), people: [], attendances: 0, sessions: new Set(), last: "" }; firms.set(p.fk.key, f); }
+    f.people.push(p); f.attendances += p.count; p.period.forEach(s => f.sessions.add(s.key));
+    const fn = (p.a.firm || "").trim(); if (fn) f.names.set(fn, (f.names.get(fn) || 0) + 1);
+    const ld = p.period[p.period.length - 1].date || ""; if (ld > f.last) f.last = ld;
+  }
+  for (const f of firms.values()) {
+    const best = [...f.names.entries()].sort((x, y) => y[1] - x[1])[0];
+    f.label = f.key === "personal" ? "Personal email addresses" : f.key === "internal" ? "Internal colleagues" : best ? best[0] : f.domain;
+    f.people.sort((x, y) => y.count - x.count || x.a.name.localeCompare(y.a.name));
+  }
+  const firmList = [...firms.values()].sort((x, y) => y.people.length - x.people.length || y.attendances - x.attendances || x.label.localeCompare(y.label));
+  const realFirms = firmList.filter(f => f.key !== "personal" && f.key !== "internal");
+  const attendances = inPeriod.reduce((t, s) => t + s.people.size, 0);
+  return { allSessions, inPeriod, people, active, firmList, realFirms, attendances,
+    returningRate: active.length ? active.filter(p => p.count >= 2).length / active.length : 0 };
+}
+
+function stackedChart(sessions) {
+  if (!sessions.length) return `<div class="empty">No sessions in this period.</div>`;
+  // each session gets a slot wide enough for its label; on wide screens slots stretch to fill the panel
+  const avail = Math.min(1080, (window.innerWidth || 1200) - 90);
+  const slot = Math.max(96, Math.min(180, Math.floor((avail - 50) / sessions.length)));
+  const H = 250, padT = 18, padB = 48, padL = 34, bw = Math.min(40, Math.round(slot * 0.36)), gap = slot - bw;
+  const W = padL + 12 + sessions.length * slot;
+  const max = Math.max(1, ...sessions.map(s => s.people.size));
+  const step = max <= 5 ? 1 : max <= 12 ? 2 : max <= 30 ? 5 : max <= 60 ? 10 : Math.ceil(max / 5 / 10) * 10;
+  const top = Math.ceil(max / step) * step, y = (v) => padT + (H - padT - padB) * (1 - v / top);
+  const ticks = []; for (let v = 0; v <= top; v += step) ticks.push(v);
+  const roundTop = (x, y0, w, h, r) => { r = Math.min(r, h, w / 2); return `M${x},${y0 + h}V${y0 + r}Q${x},${y0} ${x + r},${y0}H${x + w - r}Q${x + w},${y0} ${x + w},${y0 + r}V${y0 + h}Z`; };
+  const bars = sessions.map((s, i) => {
+    const x = padL + 12 + i * slot + (slot - bw) / 2, base = y(0);
+    const hRet = base - y(s.returning), hNew = base - y(s.newCount);
+    const tip = esc(`${s.title} · ${fmtDate(s.date)}\n${s.people.size} attended: ${s.returning} returning, ${s.newCount} first time`);
+    // returning sits on the baseline, new stacks on top with a 2px surface gap; the top segment carries the rounded end
+    const retTop = s.newCount === 0;
+    const ret = s.returning ? (retTop ? `<path d="${roundTop(x, base - hRet, bw, hRet, 4)}" fill="var(--s-ret)"/>` : `<rect x="${x}" y="${base - hRet}" width="${bw}" height="${hRet}" fill="var(--s-ret)"/>`) : "";
+    const gapPx = s.returning ? 2 : 0, nTop = base - hRet - hNew;
+    const nw = s.newCount ? `<path d="${roundTop(x, nTop, bw, Math.max(1, hNew - gapPx), 4)}" fill="var(--s-new)"/>` : "";
+    const maxCh = Math.floor((slot - 10) / 6.4), label = s.title.length > maxCh ? s.title.slice(0, maxCh - 1).trimEnd() + "…" : s.title;
+    return `<g class="bar" data-tip="${tip}" tabindex="0" aria-label="${tip}">
+      <rect x="${x - gap / 2}" y="${padT}" width="${bw + gap}" height="${H - padT - padB}" fill="transparent"/>
+      ${ret}${nw}
+      <text x="${x + bw / 2}" y="${y(s.people.size) - 6}" text-anchor="middle" class="ch-val">${s.people.size}</text>
+      <text x="${x + bw / 2}" y="${H - padB + 16}" text-anchor="middle" class="ch-x">${esc(label)}</text>
+      <text x="${x + bw / 2}" y="${H - padB + 30}" text-anchor="middle" class="ch-x2">${esc(s.date ? new Date(s.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short", year: "2-digit" }) : "")}</text>
+    </g>`;
+  }).join("");
+  return `<div class="chart-scroll"><svg class="chart" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Attendance by session, split into returning and first-time attendees">
+    ${ticks.map(v => `<line x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}" class="ch-grid"/><text x="${padL - 8}" y="${y(v) + 4}" text-anchor="end" class="ch-y">${v}</text>`).join("")}
+    ${bars}</svg><div class="ch-tip" hidden></div></div>`;
+}
+
+function csvLine(cells) { return cells.map(c => { const v = String(c ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; }).join(","); }
+async function exportInsights(kind) {
+  const D = computeInsights(); let rows;
+  if (kind === "firms") {
+    rows = [["firm", "domain", "advisers_attending", "attendances", "sessions_attended", "last_attended", "advisers"]].concat(
+      D.firmList.map(f => [f.label, f.domain, f.people.length, f.attendances, f.sessions.size, f.last, f.people.map(p => p.a.email).join("; ")]));
+  } else {
+    rows = [["email", "name", "firm", "domain", "sessions_attended", "cpd_hours", "first_attended", "last_attended", "sessions"]].concat(
+      [...D.active].sort((x, y) => y.count - x.count).map(p => { const f = D.firmList.find(x => x.key === p.fk.key);
+        return [p.a.email, p.a.name, f ? f.label : "", domainOf(p.a.email), p.count, fmtHours(p.hours), p.period[0].date, p.period[p.period.length - 1].date, p.period.map(s => s.title).join("; ")]; }));
+  }
+  const name = `cpd-insights-${kind}-${new Date().toISOString().slice(0, 10)}.csv`;
+  try { await store.save(name, new Blob(["﻿" + rows.map(csvLine).join("\n")], { type: "text/csv" })); } catch (e) { if (e && e.code !== "declined") toast(e.message || "Download failed."); }
+}
+// =====================================================================
+// Interface
+// =====================================================================
+const store = HUB_MODE === "server" ? ServerStore() : ArtifactStore();
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const newSession = () => ({ id: "", title: "", date: todayISO(), hours: "1", cpdType: "Structured", kind: "Webinar", speakers: "", outcomes: "", signatory: "", signatoryRole: "",
+  theme: "dark", textColour: "dark", namePos: "45", showDetails: true, templateFileId: "", templateType: "" });
+const SESSION_FIELDS = Object.keys(newSession());
+const newFlow = (session) => ({ mode: "generate", step: 1, session: session || newSession(), errors: {}, attendees: null, uploads: [], issuing: null, result: null, templateFile: null });
+
+const S = {
+  boot: "loading", bootError: "", isAdmin: false, canUpload: false,
+  view: "admin", route: "overview",            // admin routes: overview | issue | assign | advisers | insights
+  flow: newFlow(),
+  preview: { node: null, error: "" },
+  dir: { search: "", open: null, importing: false, csv: null },
+  armed: null, sessDel: null, backup: null,        // sessDel: { key, orphans, busy } while confirming a session delete
+  ins: { period: "all", session: "", firmOpen: null, includeInternal: false, showAllFirms: false },
+  previewing: false,                           // admin viewing the adviser experience
+  adviser: null, adviserCerts: [],
+  login: { step: "email", email: "", error: "", busy: false },
+  adminLoginError: "",
+};
+
+const adviserById = () => new Map(store.advisers().map(a => [a.id, a]));
+const sessionById = (id) => store.sessions().find(x => x.id === id);
+const certCpdType = (c) => c.cpdType || (c.sessionId && sessionById(c.sessionId)?.cpdType) || "";
+const sortCerts = (list) => [...list].sort((a, b) => String(b.eventDate || "").localeCompare(String(a.eventDate || "")) || String(a.eventTitle).localeCompare(String(b.eventTitle)));
+const unassignedCerts = () => { const ids = new Set(store.advisers().map(a => a.id)); return store.certs().filter(c => !c.adviserId || !ids.has(c.adviserId)); };
+const announce = (t) => { const l = $("#live"); if (l) { l.textContent = ""; setTimeout(() => (l.textContent = t), 30); } };
+
+let toastTimer;
+function toast(msg, kind) {
+  let t = $("#toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.innerHTML = (kind === "ok" ? icon("check-circle-fill") : kind === "err" ? icon("exclamation-circle") : "") + `<span>${esc(msg)}</span>`;
+  t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 4200);
+}
+const msg = (kind, body, ic) => `<div class="msg ${kind}" ${kind === "err" ? 'role="alert"' : ""}>${icon(ic || { ok: "check-circle", warn: "exclamation-triangle", err: "exclamation-circle", info: "info-circle" }[kind])}<div>${body}</div></div>`;
+
+// CSV for attendee and adviser imports, with problems split by kind
+function readPeopleCSV(text) {
+  const rows = parseCSV(text);
+  const out = { people: [], invalid: [], duplicates: [], missingColumns: false };
+  if (!rows.length) { out.missingColumns = true; return out; }
+  const head = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g, ""));
+  const find = (...keys) => head.findIndex(h => keys.includes(h));
+  let iEmail = find("email", "emailaddress", "email1", "attendeeemail", "participantemail", "e");
+  let iName = find("name", "fullname", "attendeename", "attendee", "delegatename", "participantname", "displayname");
+  const iFirst = find("firstname", "forename", "first", "givenname");
+  const iLast = find("lastname", "surname", "last", "familyname");
+  const iFirm = find("firm", "company", "companyname", "organisation", "organization", "firmname");
+  let body = rows.slice(1), offset = 2;
+  if (iEmail < 0 && iName < 0 && iFirst < 0) { body = rows; offset = 1; iEmail = rows[0].findIndex(c => c.includes("@")); iName = rows[0].findIndex((c, i) => i !== iEmail && c); }
+  if (iEmail < 0 || (iName < 0 && iFirst < 0)) { out.missingColumns = true; return out; }
+  const seen = new Map();
+  body.forEach((r, n) => {
+    const line = n + offset, raw = (r[iEmail] || "").trim(), email = normEmail(raw);
+    const name = (iName >= 0 ? r[iName] : [r[iFirst], r[iLast]].filter(Boolean).join(" ") || "").replace(/\s+/g, " ").trim();
+    if (!validEmail(email)) { out.invalid.push({ row: line, text: raw ? `"${raw}" is not a valid email address` : "Email address is missing", name }); return; }
+    if (!name) { out.invalid.push({ row: line, text: `No name for ${email}`, name: "" }); return; }
+    if (seen.has(email)) { out.duplicates.push({ row: line, email, first: seen.get(email) }); return; }
+    seen.set(email, line);
+    out.people.push({ email, name, firm: iFirm >= 0 ? (r[iFirm] || "").trim() : "", row: line });
+  });
+  return out;
+}
+const CSV_HELP = `Needs an <strong>email</strong> column and a <strong>name</strong> column (or <strong>first name</strong> and <strong>last name</strong>). A <strong>firm</strong> column is optional. A Teams or HubSpot export works if it has these columns.`;
+
+// ---------- shell ----------
+function render() {
+  const app = $("#app");
+  const a = document.activeElement, focusId = a && a.id, sel = a && a.selectionStart;
+  const scrollY = window.scrollY;
+  let html;
+  if (S.view === "adviser") html = adviserShell();
+  else html = adminShell();
+  app.innerHTML = html + footer();
+  if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus({ preventScroll: true }); try { if (sel != null) el.setSelectionRange(sel, sel); } catch (e) {} } }
+  window.scrollTo(0, scrollY);
+  attachPreview();
+}
+function go(route, opts = {}) {
+  S.view = "admin"; S.route = route; S.armed = null; render();
+  if (!opts.keepScroll) window.scrollTo(0, 0);
+  const h = $("main h1"); if (h && opts.focus !== false) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+}
+const brand = (sub) => `<span class="brand">${P1_MARK}<span class="brand-name">CPD Hub${sub ? ` <span>${esc(sub)}</span>` : ""}</span></span>`;
+function footer() {
+  return `<footer><div class="wrap"><div>P1 Investment Management and P1 Platform are trading names of P1 Investment Services Limited. P1 Investment Services Limited is authorised and regulated by the Financial Conduct Authority under registration number 752005.</div></div></footer>`;
+}
+
+function adminShell() {
+  if (S.boot !== "ready" && S.boot !== "error") return `<header class="topbar"><div class="wrap">${brand()}</div></header><main><div class="wrap"><p class="muted">Loading the hub…</p></div></main>`;
+  if (S.boot === "error") return `<header class="topbar"><div class="wrap">${brand()}</div></header><main><div class="wrap">${msg("err", `<strong>The hub could not load.</strong><span>${esc(S.bootError)}</span>`)}</div></main>`;
+  if (HUB_MODE === "server" && !S.isAdmin) return adminSignIn();
+  const un = unassignedCerts().length;
+  const tab = (r, label, extra = "") => `<button type="button" data-action="go" data-route="${r}" ${S.route === r || (r === "overview" && (S.route === "issue" || S.route === "assign")) ? 'aria-current="page"' : ""}>${label}${extra}</button>`;
+  return `<header class="topbar"><div class="wrap">
+      ${brand()}
+      <nav class="nav" aria-label="Admin">
+        ${tab("overview", "Certificates", un ? `<span class="count" aria-label="${un} need assigning">${un}</span>` : "")}
+        ${tab("advisers", "Advisers")}
+        ${tab("insights", "Insights")}
+      </nav>
+      <div class="topbar-end"><button class="btn btn-sm btn-secondary" data-action="preview-portal">${icon("eye")}<span class="btn-label">Adviser preview</span></button></div>
+    </div></header>
+    <main id="main"><div class="wrap">${{ overview: overviewPage, issue: issuePage, assign: assignPage, advisers: advisersPage, insights: insightsPage }[S.route]()}</div></main>`;
+}
+function adminSignIn() {
+  return `<main><div class="wrap"><form class="auth" data-form="admin-login" novalidate>
+    ${brand()}
+    <div style="display:grid;gap:6px"><h1>Admin sign in</h1><p class="muted">Manage advisers and issue CPD certificates.</p></div>
+    <label class="field"><span>Admin password</span><input id="admin-pw" type="password" autocomplete="current-password" required ${S.adminLoginError ? 'aria-invalid="true" aria-describedby="admin-err"' : ""}></label>
+    ${S.adminLoginError ? `<p class="error-text" id="admin-err">${icon("exclamation-circle")} ${esc(S.adminLoginError)}</p>` : ""}
+    <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
+  </form></div></main>`;
+}
+
+// ---------- overview ----------
+function overviewPage() {
+  const advisers = store.advisers(), certs = store.certs(), un = unassignedCerts();
+  const issued = certs.length - un.length;
+  const hours = certs.filter(c => !un.includes(c)).reduce((s, c) => s + (Number(c.cpdHours) || 0), 0);
+  return `<div class="page-head"><div><h1>Certificates</h1><p class="muted">Issue CPD certificates after each webinar or event. Advisers download them from their account.</p></div>
+      <button class="btn btn-lg btn-primary" data-action="issue-new">${icon("plus-lg")} Issue certificates</button></div>
+    ${store.loaded() ? "" : msg("info", "Loading saved records…", "clock")}
+    <section class="metrics" aria-label="Summary">
+      <div class="metric"><b>${advisers.length}</b><span>Adviser accounts</span></div>
+      <div class="metric"><b>${issued}</b><span>Certificates issued</span></div>
+      <div class="metric"><b>${fmtHours(hours)}</b><span>CPD hours issued</span></div>
+      <button type="button" class="metric ${un.length ? "attention" : ""}" data-action="go" data-route="assign"><b>${un.length}</b><span>Need assigning</span>${un.length ? `<span class="go">Assign now ${icon("arrow-right")}</span>` : ""}</button>
+    </section>
+    ${sessionsPanel()}`;
+}
+// every session row: saved sessions, plus older certificates grouped by title and date
+function sessionGroups() {
+  const certs = store.certs(), saved = store.sessions();
+  const rows = saved.map(x => { const mine = certs.filter(c => c.sessionId === x.id); return { key: "s:" + x.id, id: x.id, title: x.title, date: x.date, kind: x.kind, hours: x.hours, cpdType: x.cpdType, certs: mine }; });
+  const groups = new Map();
+  certs.filter(c => !c.sessionId || !saved.some(x => x.id === c.sessionId)).forEach(c => { const k = "t:" + (c.eventTitle || "") + "|" + (c.eventDate || ""); const g = groups.get(k) || { key: k, id: "", title: c.eventTitle, date: c.eventDate, kind: c.eventKind, hours: c.cpdHours, cpdType: c.cpdType, certs: [] }; g.certs.push(c); groups.set(k, g); });
+  return rows.concat([...groups.values()]).map(g => ({ ...g, n: g.certs.length, un: g.certs.filter(c => !c.adviserId).length }))
+    .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+}
+// advisers whose only certificates are in this session: removing the session would leave them with nothing
+function onlyThisSession(g) {
+  const ids = new Set(g.certs.map(c => c.adviserId).filter(Boolean)), inGroup = new Set(g.certs.map(c => c.id));
+  return store.advisers().filter(a => ids.has(a.id) && store.certs().every(c => c.adviserId !== a.id || inGroup.has(c.id)));
+}
+function sessionDeleteRow(g) {
+  const orphans = onlyThisSession(g), busy = S.sessDel && S.sessDel.busy;
+  return `<tr class="detail"><td colspan="5"><div style="display:grid;gap:12px;padding-top:12px" role="group" aria-labelledby="del-h-${esc(g.key)}">
+    ${msg("warn", `<strong id="del-h-${esc(g.key)}">Delete ${esc(g.title)}?</strong><span>This permanently removes the session${g.n ? ` and its ${plural(g.n, "certificate")}` : ""}. Advisers will no longer see ${g.n === 1 ? "it" : "them"} in their accounts. This can't be undone.</span>`)}
+    ${orphans.length ? `<label class="check"><input type="checkbox" id="del-orphans" ${S.sessDel.orphans ? "checked" : ""} data-action="del-orphans"> Also delete ${plural(orphans.length, "adviser account")} with no other certificates: ${orphans.slice(0, 5).map(a => esc(a.name)).join(", ")}${orphans.length > 5 ? ` and ${orphans.length - 5} more` : ""}</label>` : ""}
+    ${busy ? `<p class="small muted" aria-live="polite">Deleting… keep this page open.</p>` : ""}
+    <div class="row"><button class="btn btn-sm btn-danger armed" data-action="sess-del-confirm" data-key="${esc(g.key)}" ${busy ? "disabled" : ""}>${icon("trash3")} Delete session${g.n ? ` and ${plural(g.n, "certificate")}` : ""}</button>
+      <button class="btn btn-sm btn-secondary" data-action="sess-del-cancel" ${busy ? "disabled" : ""}>Cancel</button></div>
+  </div></td></tr>`;
+}
+function sessionsPanel() {
+  const all = sessionGroups();
+  return `<section class="panel" aria-labelledby="h-sessions"><div class="panel-head"><h2 id="h-sessions">Sessions</h2></div>
+    ${all.length ? `<div class="table-wrap"><table class="stack">
+      <thead><tr><th>Session</th><th>Date</th><th>CPD</th><th class="num">Certificates</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+      ${all.map(g => { const open = S.sessDel && S.sessDel.key === g.key; return `<tr class="${open ? "open" : ""}"><td><strong>${esc(g.title)}</strong><span class="sub">${esc(g.kind || "")}</span></td><td data-label="Date">${fmtDate(g.date)}</td>
+        <td data-label="CPD">${fmtHours(g.hours)} ${Number(g.hours) === 1 ? "hr" : "hrs"}${g.cpdType ? `<span class="sub">${esc(g.cpdType)}</span>` : ""}</td>
+        <td class="num" data-label="Certificates">${g.n}${g.un ? ` <span class="chip warn">${g.un} unassigned</span>` : ""}</td>
+        <td class="actions"><div class="row">${g.id ? `<button class="btn btn-sm btn-secondary" data-action="issue-more" data-id="${g.id}">Issue more</button>` : ""}
+          <button class="btn btn-sm btn-danger" data-action="sess-del" data-key="${esc(g.key)}" aria-expanded="${open}" aria-label="Delete ${esc(g.title)}">${icon("trash3")} Delete</button></div></td></tr>
+        ${open ? sessionDeleteRow(g) : ""}`; }).join("")}
+      </tbody></table></div>`
+    : `<div class="empty"><strong>No sessions yet</strong><span>Issue certificates for your first webinar or event.</span><button class="btn btn-md btn-primary" data-action="issue-new">${icon("plus-lg")} Issue certificates</button></div>`}
+  </section>`;
+}
+async function deleteSessionGroup(key) {
+  const g = sessionGroups().find(x => x.key === key); if (!g) { S.sessDel = null; render(); return; }
+  const orphans = S.sessDel.orphans ? onlyThisSession(g) : [];
+  S.sessDel.busy = true; render();
+  try {
+    await store.deleteSession({ id: g.id, certs: g.certs });
+    for (const a of orphans) await store.deleteAdviser(a.id);
+    S.sessDel = null; render();
+    toast(`Deleted ${g.title}${g.n ? ` and ${plural(g.n, "certificate")}` : ""}${orphans.length ? `, plus ${plural(orphans.length, "account")}` : ""}.`, "ok");
+    document.getElementById("h-sessions")?.setAttribute("tabindex", "-1"); document.getElementById("h-sessions")?.focus();
+  } catch (e) { S.sessDel.busy = false; render(); toast((e && e.message) || "The session couldn't be deleted. Try again.", "err"); }
+}
+
+// ---------- issue flow ----------
+const STEP_LABELS = () => S.flow.mode === "generate"
+  ? [["Session details", "Title, date and CPD"], ["Attendees", "Upload the attendee list"], ["Review and issue", "Check, then issue"]]
+  : [["Session details", "Title, date and CPD"], ["Certificates", "Upload PDFs and match"], ["Review and issue", "Check, then issue"]];
+
+function issuePage() {
+  const F = S.flow, ss = F.session;
+  if (F.result) return resultView();
+  const steps = STEP_LABELS();
+  return `<div class="page-head"><div><button class="back" data-action="go" data-route="overview">${icon("arrow-left")} Certificates</button>
+      <h1>${ss.id ? `Issue more: ${esc(ss.title)}` : "Issue certificates"}</h1></div></div>
+    ${F.step < 3 ? `<fieldset class="choice"><legend class="visually-hidden">How do you want to issue certificates?</legend>
+      <label><input type="radio" name="mode" id="mode-generate" value="generate" data-action="mode" ${F.mode === "generate" ? "checked" : ""}><strong>Generate from an attendee list</strong><small>Upload the attendee CSV. The hub creates the PDFs and any missing accounts.</small></label>
+      <label><input type="radio" name="mode" id="mode-upload" value="upload" data-action="mode" ${F.mode === "upload" ? "checked" : ""}><strong>Upload existing certificate PDFs</strong><small>Use certificates made elsewhere. Each is matched to an adviser by the name on it.</small></label>
+    </fieldset>` : ""}
+    <nav aria-label="Progress"><ol class="steps">${steps.map(([t, sub], i) => { const n = i + 1, cur = F.step === n, done = n < F.step;
+      return `<li><button type="button" class="${done ? "done" : ""}" ${cur ? 'aria-current="step"' : ""} ${done ? `data-action="step" data-n="${n}"` : 'tabindex="-1"'}><span class="n">${done ? icon("check2") : n}</span><span>${t}<span class="label-sub">${sub}</span></span></button></li>`; }).join("")}</ol></nav>
+    ${[stepSession, F.mode === "generate" ? stepAttendees : stepUploads, stepReview][F.step - 1]()}`;
+}
+
+function fieldErr(k) { const e = S.flow.errors[k]; return e ? `<p class="error-text" id="err-${k}">${icon("exclamation-circle")} ${esc(e)}</p>` : ""; }
+function sInput(id, label, k, type = "text", attrs = "", required = false, help = "") {
+  const e = S.flow.errors[k], v = S.flow.session[k];
+  return `<label class="field ${type === "text" && k === "title" ? "wide" : ""}"><span>${label}${required ? ' <span class="req" aria-hidden="true">*</span>' : ""}</span>
+    <input id="${id}" type="${type}" data-sbind="${k}" value="${esc(v)}" ${attrs} ${required ? "required" : ""} ${e ? `aria-invalid="true" aria-describedby="err-${k}"` : help ? `aria-describedby="help-${k}"` : ""}>
+    ${help && !e ? `<span class="help" id="help-${k}">${help}</span>` : ""}${fieldErr(k)}</label>`;
+}
+function sSelect(id, label, k, options) {
+  return `<label class="field"><span>${label}</span><select id="${id}" data-sbind="${k}">${options.map(([v, t]) => `<option value="${esc(v)}" ${String(S.flow.session[k]) === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>`;
+}
+function stepSession() {
+  const F = S.flow, ss = F.session, gen = F.mode === "generate";
+  const optCount = ["speakers", "outcomes", "signatory"].filter(k => String(ss[k] || "").trim()).length;
+  const form = `<div class="form">
+      ${sInput("s-title", "Session title", "title", "text", 'autocomplete="off" placeholder="e.g. Q4 Outlook: fixed income"', true, "Shown on the certificate and in the adviser's account.")}
+      <div class="fields">
+        ${sInput("s-date", "Date", "date", "date", "", true)}
+        ${sInput("s-hours", "CPD hours", "hours", "number", 'min="0" max="40" step="0.25" inputmode="decimal"', true)}
+        ${sSelect("s-cpdtype", "CPD type", "cpdType", [["Structured", "Structured"], ["Unstructured", "Unstructured"], ["", "Not stated"]])}
+      </div>
+      <div class="fields two">${sSelect("s-kind", "Format", "kind", [["Webinar", "Webinar"], ["Event", "Event"], ["Workshop", "Workshop"], ["Conference", "Conference"], ["Roundtable", "Roundtable"]])}</div>
+      ${gen ? `<details class="group" id="opt-details" ${optCount ? "open" : ""}><summary>Presenter, learning outcomes and signatory <small>Optional${optCount ? ` · ${optCount} added` : ""}</small>${icon("chevron-down")}</summary><div class="group-body">
+        ${sInput("s-speakers", "Presented by", "speakers", "text", 'placeholder="e.g. Will Dickson"')}
+        <label class="field"><span>Learning outcomes</span><textarea id="s-outcomes" rows="3" data-sbind="outcomes" aria-describedby="help-outcomes" placeholder="Explain how rate expectations affect bond portfolios">${esc(ss.outcomes)}</textarea><span class="help" id="help-outcomes">One per line, up to four.</span></label>
+        <div class="fields two">${sInput("s-sig", "Signed by", "signatory", "text", 'placeholder="Full name"')}${sInput("s-sigrole", "Their role", "signatoryRole", "text", 'placeholder="e.g. Head of Investment"')}</div>
+      </div></details>
+      <details class="group" id="opt-design" ${ss.theme === "custom" ? "open" : ""}><summary>Certificate design <small>${{ dark: "P1 dark", light: "P1 light", custom: "Your own background" }[ss.theme]}</small>${icon("chevron-down")}</summary><div class="group-body">
+        ${sSelect("s-theme", "Design", "theme", [["dark", "P1 dark"], ["light", "P1 light (print-friendly)"], ["custom", "Upload my own background"]])}
+        ${ss.theme === "custom" ? `
+          <label class="drop compact" data-drop="tpl">${icon("file-earmark-arrow-up")}<span><strong>${F.templateFile ? esc(F.templateFile.name) : ss.templateFileId ? "Replace saved background" : "Choose a blank certificate background"}</strong><br><small>PDF, PNG or JPG with no attendee name on it.</small></span><input id="tpl-input" type="file" accept=".pdf,application/pdf,.png,.jpg,.jpeg,image/png,image/jpeg"></label>
+          ${fieldErr("template")}
+          <div class="fields two">
+            <label class="field"><span>Name position: <span id="pos-val">${esc(ss.namePos)}</span>% from the top</span><input id="s-namepos" type="range" min="15" max="85" step="1" data-sbind="namePos" value="${esc(ss.namePos)}"></label>
+            ${sSelect("s-colour", "Text colour", "textColour", [["dark", "Black"], ["light", "White"]])}
+          </div>
+          <label class="check"><input id="s-details" type="checkbox" data-sbind="showDetails" ${ss.showDetails !== false ? "checked" : ""}> Add session title, date and CPD hours under the name</label>` : ""}
+      </div></details>` : ""}
+    </div>`;
+  const next = gen ? "Continue to attendees" : "Continue to certificates";
+  const previewCol = gen ? `<aside class="preview-col sticky" aria-label="Certificate preview"><div class="panel">
+      <div class="panel-head"><h2>Preview</h2><span class="small muted">${F.attendees && F.attendees.people.length ? "First attendee's name" : "Sample name"}</span></div>
+      <div class="preview-box" id="cert-preview">${previewPlaceholder()}</div></div></aside>`
+    : `<aside class="preview-col"><div class="panel"><h2>How matching works</h2>
+      <p class="muted small">Each PDF is read for an adviser's email address, then their name. If the PDF has no readable text, the filename is used, so <strong>Jane Smith.pdf</strong> matches Jane Smith.</p>
+      <p class="muted small">Anything that can't be matched with confidence is flagged for you to choose before issuing, or can go to the assignment queue.</p></div></aside>`;
+  return `<section class="split">
+      <div class="panel"><h2 class="visually-hidden">Session details</h2>${form}
+        <div class="row between">${gen ? `<button class="btn btn-md btn-secondary only-mobile" data-action="preview-modal">${icon("eye")} Preview certificate</button>` : "<span></span>"}
+        <button class="btn btn-lg btn-primary" data-action="next">${next} ${icon("arrow-right")}</button></div></div>
+      ${previewCol}
+    </section>`;
+}
+const previewPlaceholder = () => S.preview.error ? `<div class="placeholder">${esc(S.preview.error)}</div>` : `<div class="placeholder">Building preview…</div>`;
+
+// attendees (generate route)
+function attendeeRows() {
+  const A = S.flow.attendees; if (!A) return [];
+  const byEmail = new Map(store.advisers().map(x => [normEmail(x.email), x]));
+  const ss = S.flow.session, t = ss.title.trim().toLowerCase();
+  return A.people.map(p => {
+    const ex = byEmail.get(p.email);
+    const has = ex && store.certs().some(c => c.adviserId === ex.id && ((ss.id && c.sessionId === ss.id) || (String(c.eventTitle).trim().toLowerCase() === t && (c.eventDate || "") === ss.date)));
+    const status = has ? "issued" : ex ? "existing" : "new";
+    if (p.include == null || p._status !== status) { p.include = status !== "issued"; p._status = status; }
+    return { ...p, status, existing: ex };
+  });
+}
+function stepAttendees() {
+  const A = S.flow.attendees, rows = attendeeRows();
+  const sel = rows.filter(r => r.include), dupIssued = rows.filter(r => r.status === "issued").length;
+  const label = { new: ["new", "New account"], existing: ["neutral", "Has an account"], issued: ["warn", "Already has this certificate"] };
+  return `<section class="panel" aria-labelledby="h-att">
+    <div class="panel-head"><div><h2 id="h-att">Attendees</h2><p class="muted small">${CSV_HELP}</p></div>
+      <button class="btn btn-sm btn-ghost" data-action="csv-template">${icon("download")} CSV template</button></div>
+    <label class="drop ${A ? "compact" : ""}" data-drop="att">${icon("file-earmark-spreadsheet")}<span><strong>${A ? `Replace ${esc(A.fileName)}` : "Choose the attendee CSV"}</strong>${A ? "" : "<br><small>or drop it here</small>"}</span><input id="att-input" type="file" accept=".csv,text/csv"></label>
+    ${fieldErr("attendees")}
+    ${A ? (A.missingColumns ? msg("err", `<strong>We couldn't find the columns we need in ${esc(A.fileName)}.</strong><span>${CSV_HELP} Check the first row has column headings, then upload it again.</span>`) : `
+      <div class="counts" aria-label="Attendee summary">
+        <span class="chip neutral">${plural(rows.length, "attendee")}</span>
+        <span class="chip new">${rows.filter(r => r.status === "new").length} new accounts</span>
+        ${dupIssued ? `<span class="chip warn">${dupIssued} already issued</span>` : ""}
+        ${A.duplicates.length ? `<span class="chip warn">${plural(A.duplicates.length, "duplicate row")}</span>` : ""}
+        ${A.invalid.length ? `<span class="chip err">${A.invalid.length} invalid</span>` : ""}
+      </div>
+      ${A.invalid.length ? msg("err", `<strong>${plural(A.invalid.length, "row")} can't be issued and will be left out.</strong><ul>${A.invalid.slice(0, 6).map(x => `<li>Row ${x.row}${x.name ? ` (${esc(x.name)})` : ""}: ${esc(x.text)}</li>`).join("")}${A.invalid.length > 6 ? `<li>and ${A.invalid.length - 6} more</li>` : ""}</ul><span>To include them, correct the CSV and upload it again.</span>`) : ""}
+      ${A.duplicates.length ? msg("warn", `<strong>${plural(A.duplicates.length, "email address", "email addresses")} appeared more than once.</strong><span>Each person gets one certificate. We kept the first row: ${A.duplicates.slice(0, 4).map(d => `${esc(d.email)} (row ${d.first})`).join(", ")}${A.duplicates.length > 4 ? "…" : ""}.</span>`) : ""}
+      ${dupIssued ? msg("info", `<strong>${plural(dupIssued, "attendee")} already ${dupIssued === 1 ? "has" : "have"} a certificate for this session.</strong><span>They're unticked so nobody gets a second copy. Tick a row to issue it again.</span>`) : ""}
+      ${rows.length ? `<div class="table-wrap scroll-y"><table>
+        <thead><tr><th style="width:44px"><input type="checkbox" id="att-all" data-action="att-all" aria-label="Select all attendees" ${sel.length === rows.length ? "checked" : ""}></th><th>Attendee</th><th>Firm</th><th>Account</th></tr></thead><tbody>
+        ${rows.map((r, i) => `<tr><td><input type="checkbox" id="att-${i}" data-action="att-inc" data-i="${i}" ${r.include ? "checked" : ""} aria-label="Issue to ${esc(r.name)}"></td>
+          <td><strong>${esc(r.name)}</strong><span class="sub">${esc(r.email)}</span></td><td>${esc(r.firm || "")}</td><td><span class="chip ${label[r.status][0]}">${label[r.status][1]}</span></td></tr>`).join("")}
+      </tbody></table></div>` : ""}`) : ""}
+    <div class="row between"><button class="btn btn-md btn-secondary" data-action="step" data-n="1">${icon("arrow-left")} Back</button>
+      <button class="btn btn-lg btn-primary" data-action="next" ${sel.length ? "" : "disabled"}>Review ${plural(sel.length, "certificate")} ${icon("arrow-right")}</button></div>
+  </section>`;
+}
+
+// uploads (existing PDFs route)
+const UP_STATUS = { reading: ["neutral", "Reading…"], matched: ["ok", "Matched"], ambiguous: ["warn", "Choose adviser"], unmatched: ["err", "No match"], duplicate: ["warn", "Already issued"], error: ["err", "Unreadable"] };
+const METHOD = { name: "Name on certificate", email: "Email on certificate", filename: "Filename", manual: "Chosen by you", generated: "Generated from attendee list" };
+function adviserOptions(selected, prefer = [], emptyLabel = "Leave unassigned") {
+  const list = store.advisers().slice().sort((a, b) => a.name.localeCompare(b.name));
+  const top = prefer.length ? list.filter(a => prefer.includes(a.id)) : [];
+  const opt = (a) => `<option value="${esc(a.id)}" ${a.id === selected ? "selected" : ""}>${esc(a.name)} (${esc(a.email)})</option>`;
+  return `<option value="">${emptyLabel}</option>` + (top.length ? `<optgroup label="Names found on the certificate">${top.map(opt).join("")}</optgroup><optgroup label="All advisers">` : "") + list.map(opt).join("") + (top.length ? "</optgroup>" : "");
+}
+function stepUploads() {
+  const rows = S.flow.uploads, reading = rows.filter(r => r.status === "reading").length;
+  const c = (k) => rows.filter(r => r.status === k).length;
+  const willIssue = rows.filter(r => r.include && r.status !== "error" && r.status !== "reading").length;
+  return `<section class="panel" aria-labelledby="h-up">
+    <div class="panel-head"><div><h2 id="h-up">Certificates</h2><p class="muted small">Add every certificate for this session. PDF, PNG or JPG.</p></div></div>
+    ${!store.advisers().length ? msg("info", `<span>No adviser accounts exist yet, so nothing can be matched. Import advisers first from the Advisers tab, or continue and assign certificates later.</span>`) : ""}
+    <label class="drop ${rows.length ? "compact" : ""}" data-drop="certs">${icon("cloud-arrow-up")}<span><strong>${rows.length ? "Add more certificates" : "Choose certificate files"}</strong>${rows.length ? "" : "<br><small>or drop them here. Select as many as you like.</small>"}</span><input id="cert-input" type="file" multiple accept=".pdf,application/pdf,.png,.jpg,.jpeg,image/png,image/jpeg"></label>
+    ${fieldErr("uploads")}
+    ${rows.length ? `
+      <div class="counts">${reading ? `<span class="chip neutral">Reading ${reading}…</span>` : ""}${["matched", "ambiguous", "unmatched", "duplicate", "error"].filter(k => c(k)).map(k => `<span class="chip ${UP_STATUS[k][0]}">${c(k)} ${UP_STATUS[k][1].toLowerCase()}</span>`).join("")}</div>
+      ${c("ambiguous") || c("unmatched") ? msg("warn", `<strong>${c("ambiguous") + c("unmatched")} need${c("ambiguous") + c("unmatched") === 1 ? "s" : ""} your attention.</strong><span>Choose the right adviser in the Adviser column. If you're not sure, leave it unassigned: it's stored safely and waits in the assignment queue, hidden from advisers.</span>`) : ""}
+      ${c("error") ? msg("err", `<strong>${plural(c("error"), "file")} couldn't be opened.</strong><span>Check ${c("error") === 1 ? "it's a valid PDF or image" : "they're valid PDFs or images"} and add ${c("error") === 1 ? "it" : "them"} again.</span>`) : ""}
+      <div class="table-wrap scroll-y"><table>
+        <thead><tr><th style="width:44px"><span class="visually-hidden">Include</span></th><th>File</th><th>Status</th><th>Adviser</th><th><span class="visually-hidden">Remove</span></th></tr></thead><tbody>
+        ${rows.map(r => `<tr>
+          <td><input type="checkbox" id="inc-${r.key}" data-action="up-inc" data-key="${r.key}" ${r.include ? "checked" : ""} ${r.status === "reading" || r.status === "error" ? "disabled" : ""} aria-label="Include ${esc(r.file.name)}"></td>
+          <td><div class="truncate" title="${esc(r.file.name)}">${esc(r.file.name)}</div>${r.note ? `<span class="sub">${esc(r.note)}</span>` : ""}</td>
+          <td><span class="chip ${UP_STATUS[r.status][0]}">${UP_STATUS[r.status][1]}</span>${r.method ? `<span class="sub">${METHOD[r.method]}</span>` : ""}</td>
+          <td style="min-width:240px"><label class="visually-hidden" for="rv-${r.key}">Adviser for ${esc(r.file.name)}</label><select id="rv-${r.key}" data-action="up-assign" data-key="${r.key}" ${r.status === "reading" || r.status === "error" ? "disabled" : ""}>${adviserOptions(r.adviserId, r.candidates)}</select></td>
+          <td class="actions"><button class="btn btn-sm btn-ghost" data-action="up-remove" data-key="${r.key}" aria-label="Remove ${esc(r.file.name)}">${icon("x-lg")}</button></td>
+        </tr>`).join("")}
+      </tbody></table></div>` : ""}
+    <div class="row between"><button class="btn btn-md btn-secondary" data-action="step" data-n="1">${icon("arrow-left")} Back</button>
+      <button class="btn btn-lg btn-primary" data-action="next" ${willIssue && !reading ? "" : "disabled"}>Review ${plural(willIssue, "certificate")} ${icon("arrow-right")}</button></div>
+  </section>`;
+}
+
+function reviewPlan() {
+  const F = S.flow;
+  if (F.mode === "generate") {
+    const rows = attendeeRows(), sel = rows.filter(r => r.include);
+    return { total: sel.length, cells: [
+      ["Certificates to issue", sel.length, true], ["New adviser accounts", sel.filter(r => r.status === "new").length],
+      ["Skipped, already issued", rows.filter(r => !r.include && r.status === "issued").length + rows.filter(r => !r.include && r.status !== "issued").length],
+      ["Left out, invalid or duplicate", (F.attendees?.invalid.length || 0) + (F.attendees?.duplicates.length || 0)]] };
+  }
+  const rows = F.uploads, inc = rows.filter(r => r.include && r.status !== "error" && r.status !== "reading");
+  return { total: inc.length, cells: [
+    ["Certificates to issue", inc.filter(r => r.adviserId).length, true], ["To assignment queue", inc.filter(r => !r.adviserId).length],
+    ["Skipped", rows.filter(r => !r.include && r.status !== "error").length], ["Unreadable", rows.filter(r => r.status === "error").length]] };
+}
+function stepReview() {
+  const F = S.flow, ss = F.session, plan = reviewPlan();
+  const queued = F.mode === "upload" ? plan.cells[1][1] : 0;
+  return `<section class="panel" aria-labelledby="h-rev">
+    <h2 id="h-rev">Review and issue</h2>
+    <dl class="dl">
+      <dt>Session</dt><dd>${esc(ss.title)}</dd>
+      <dt>Date</dt><dd>${fmtDate(ss.date)}</dd>
+      <dt>CPD</dt><dd>${esc(cpdLine(ss))}</dd>
+      <dt>Format</dt><dd>${esc(ss.kind)}</dd>
+      ${F.mode === "generate" ? `<dt>Design</dt><dd>${{ dark: "P1 dark", light: "P1 light", custom: "Your own background" }[ss.theme]}</dd>` : `<dt>Source</dt><dd>Uploaded PDFs</dd>`}
+    </dl>
+    <div class="summary">${plan.cells.map(([l, n, lead]) => `<div class="${lead ? "lead" : ""}"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
+    ${queued ? msg("info", `<span>${plural(queued, "certificate")} will be stored without an adviser and wait in the assignment queue until you choose who ${queued === 1 ? "it belongs" : "they belong"} to.</span>`) : ""}
+    ${F.issuing ? `<div style="display:grid;gap:8px" aria-live="polite"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${F.issuing.total}" aria-valuenow="${F.issuing.done}" aria-label="Issuing certificates"><i style="width:${(F.issuing.done / Math.max(1, F.issuing.total)) * 100}%"></i></div><p class="small muted">${esc(F.issuing.phase)} ${F.issuing.done} of ${F.issuing.total}. Keep this page open.</p></div>` : ""}
+    <div class="row between"><button class="btn btn-md btn-secondary" data-action="step" data-n="2" ${F.issuing ? "disabled" : ""}>${icon("arrow-left")} Back</button>
+      <button class="btn btn-lg btn-primary" data-action="issue" ${plan.total && !F.issuing && S.canUpload ? "" : "disabled"}>${F.issuing ? "Issuing…" : `Issue ${plural(plan.total, "certificate")}`}</button></div>
+    ${!S.canUpload ? msg("err", "<span>You have view-only access to this hub, so you can't issue certificates.</span>") : ""}
+  </section>`;
+}
+function resultView() {
+  const R = S.flow.result;
+  const names = R.issued.slice(0, 12);
+  return `<div class="page-head"><div><button class="back" data-action="go" data-route="overview">${icon("arrow-left")} Certificates</button><h1>Certificates issued</h1></div></div>
+    <section class="panel" aria-labelledby="h-res">
+      ${R.failed.length ? msg("warn", `<strong id="h-res">Issued ${plural(R.issued.length, "certificate")} for ${esc(R.title)}. ${R.failed.length} failed.</strong><ul>${R.failed.slice(0, 8).map(f => `<li>${esc(f)}</li>`).join("")}</ul><span>The failed ones weren't saved. Go back and try them again.</span>`)
+        : msg("ok", `<strong id="h-res">Issued ${plural(R.issued.length, "certificate")} for ${esc(R.title)}.</strong><span>${R.created ? `${plural(R.created, "new adviser account")} created. ` : ""}Advisers can now sign in and download ${R.issued.length === 1 ? "it" : "them"}.</span>`)}
+      ${R.queued ? msg("info", `<span>${plural(R.queued, "certificate")} went to the assignment queue.</span> <button class="btn btn-sm btn-secondary" data-action="go" data-route="assign" style="justify-self:start">Assign now</button>`) : ""}
+      ${names.length ? `<div class="table-wrap"><table><thead><tr><th>Issued to</th><th>Email</th></tr></thead><tbody>${names.map(n => `<tr><td>${esc(n.name)}</td><td>${esc(n.email)}</td></tr>`).join("")}${R.issued.length > names.length ? `<tr><td colspan="2" class="muted">and ${R.issued.length - names.length} more</td></tr>` : ""}</tbody></table></div>` : ""}
+      <div class="row">
+        <button class="btn btn-md btn-primary" data-action="go" data-route="overview">Back to certificates</button>
+        ${R.sessionId ? `<button class="btn btn-md btn-secondary" data-action="issue-more" data-id="${R.sessionId}">Issue more for this session</button>` : ""}
+        ${R.certIds.length ? `<button class="btn btn-md btn-secondary" data-action="zip-result">${icon("download")} Download these (zip)</button>` : ""}
+      </div>
+    </section>`;
+}
+
+// ---------- assignment queue ----------
+function assignPage() {
+  const list = sortCerts(unassignedCerts());
+  return `<div class="page-head"><div><button class="back" data-action="go" data-route="overview">${icon("arrow-left")} Certificates</button><h1>Assign certificates</h1>
+      <p class="muted">These couldn't be matched to an adviser. Advisers can't see a certificate until it's assigned. Preview it to check the name, then choose the adviser.</p></div></div>
+    ${list.length ? `<div class="table-wrap"><table><thead><tr><th>Certificate</th><th>Session</th><th>Adviser</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+      ${list.map(c => `<tr><td><div class="truncate" title="${esc(c.fileName)}">${esc(c.fileName)}</div></td>
+        <td>${esc(c.eventTitle)}<span class="sub">${fmtDate(c.eventDate)}</span></td>
+        <td style="min-width:240px"><label class="visually-hidden" for="as-${c.id}">Adviser for ${esc(c.fileName)}</label><select id="as-${c.id}">${adviserOptions("", [], "Choose an adviser")}</select></td>
+        <td class="actions"><div class="row"><button class="btn btn-sm btn-ghost" data-action="preview" data-id="${c.id}">${icon("eye")} Preview</button><button class="btn btn-sm btn-primary" data-action="assign" data-id="${c.id}">Assign</button>${delBtn("cert", c.id)}</div></td></tr>`).join("")}
+    </tbody></table></div>`
+    : `<div class="empty">${icon("check-circle")}<strong>Every certificate is assigned</strong><span>Unmatched certificates from future uploads will appear here.</span><button class="btn btn-md btn-secondary" data-action="go" data-route="overview">Back to certificates</button></div>`}`;
+}
+function delBtn(kind, id, label = "Delete") {
+  const armed = S.armed === kind + ":" + id;
+  return `<button class="btn btn-sm btn-danger ${armed ? "armed" : ""}" data-action="delete" data-kind="${kind}" data-id="${id}" ${armed ? 'aria-describedby="arm-hint"' : ""}>${icon("trash3")} ${armed ? "Confirm delete" : label}</button>${armed ? '<span id="arm-hint" class="visually-hidden">Press again to delete permanently</span>' : ""}`;
+}
+
+// ---------- advisers ----------
+function advisersPage() {
+  const D = S.dir, advisers = store.advisers(), certs = store.certs();
+  const q = normText(D.search).trim();
+  const counts = new Map(), hrs = new Map();
+  certs.forEach(c => { if (c.adviserId) { counts.set(c.adviserId, (counts.get(c.adviserId) || 0) + 1); hrs.set(c.adviserId, (hrs.get(c.adviserId) || 0) + (Number(c.cpdHours) || 0)); } });
+  const list = advisers.filter(a => !q || normText(a.name + " " + a.email + " " + (a.firm || "")).includes(q)).sort((a, b) => a.name.localeCompare(b.name));
+  return `<div class="page-head"><div><h1>Advisers</h1><p class="muted">${plural(advisers.length, "account")}. Advisers sign in with the email address shown here.</p></div>
+      <div class="row"><button class="btn btn-md btn-secondary" data-action="dir-import" aria-expanded="${D.importing}">${icon("person-check")} Import advisers</button>
+      <button class="btn btn-md btn-secondary" data-action="zip-all" ${certs.some(c => c.adviserId) ? "" : "disabled"}>${icon("download")} All certificates (zip)</button></div></div>
+    ${D.importing ? importPanel() : ""}
+    <section class="panel" aria-label="Adviser list">
+      <label class="field" style="max-width:420px"><span class="visually-hidden">Search advisers</span><input id="dir-search" type="search" placeholder="Search by name, email or firm" value="${esc(D.search)}" data-action="search"></label>
+      ${advisers.length ? `<div class="table-wrap"><table><thead><tr><th>Adviser</th><th>Firm</th><th class="num">Certificates</th><th class="num">CPD hours</th><th><span class="visually-hidden">Details</span></th></tr></thead><tbody>
+        ${list.map(a => { const open = D.open === a.id; return `<tr class="${open ? "open" : ""}">
+          <td><strong>${esc(a.name)}</strong><span class="sub">${esc(a.email)}</span></td><td>${esc(a.firm || "")}</td>
+          <td class="num">${counts.get(a.id) || 0}</td><td class="num">${fmtHours(hrs.get(a.id) || 0)}</td>
+          <td class="actions"><button class="btn btn-sm btn-secondary" data-action="dir-open" data-id="${a.id}" aria-expanded="${open}" aria-controls="det-${a.id}">${open ? "Close" : "View"}</button></td></tr>
+          ${open ? `<tr class="detail" id="det-${a.id}"><td colspan="5">${adviserDetail(a)}</td></tr>` : ""}`; }).join("")}
+        ${!list.length ? `<tr><td colspan="5"><div class="empty" style="border:0">No advisers match "${esc(D.search)}".</div></td></tr>` : ""}
+      </tbody></table></div>` : `<div class="empty"><strong>No advisers yet</strong><span>Accounts are created when you issue certificates from an attendee list, or import advisers here.</span></div>`}
+    </section>
+    ${backupPanel()}`;
+}
+// ---------- backup: move everything between hubs (e.g. the internal version to Netlify) ----------
+function backupPanel() {
+  const B = S.backup;
+  return `<section class="panel" aria-labelledby="h-backup"><div class="panel-head"><div><h2 id="h-backup">Backup and move data</h2>
+      <p class="muted small">Export everything (advisers, sessions, certificates and PDFs) as one zip file, then import it into another copy of the hub. Importing again skips anything already there.</p></div>
+      <div class="row"><button class="btn btn-md btn-secondary" data-action="backup-export" ${B && B.busy ? "disabled" : ""}>${icon("download")} Export all data</button>
+      <label class="btn btn-md btn-secondary" ${B && B.busy ? 'aria-disabled="true"' : ""}>${icon("cloud-arrow-up")} Import from backup<input id="backup-input" type="file" accept=".zip,application/zip" class="visually-hidden" ${B && B.busy ? "disabled" : ""}></label></div></div>
+    ${B && B.text ? msg(B.kind || "info", `<span aria-live="polite">${esc(B.text)}</span>`) : ""}
+  </section>`;
+}
+function backupStatus(kind, text, busy) { S.backup = { kind, text, busy }; const el = document.getElementById("h-backup"); if (el) el.closest("section").outerHTML = backupPanel(); }
+async function exportAll() {
+  if (!window.JSZip) return toast("Zip support isn't available right now.", "err");
+  const certs = store.certs(), sessions = store.sessions(), advisers = store.advisers();
+  const zip = new JSZip(); let missing = 0;
+  backupStatus("info", `Packing ${plural(certs.length, "certificate")}…`, true);
+  for (const [i, c] of certs.entries()) {
+    try { zip.file(`files/cert/${c.id}`, await certBlob(c)); } catch (e) { missing++; }
+    if (i % 10 === 0) backupStatus("info", `Packing certificates: ${i + 1} of ${certs.length}…`, true);
+  }
+  for (const x of sessions.filter(x => x.templateFileId)) { try { zip.file(`files/tpl/${x.templateFileId}`, await store.templateBlob(x)); } catch (e) { missing++; } }
+  zip.file("data.json", JSON.stringify({ format: "p1-cpd-hub", version: 1, exportedAt: new Date().toISOString(), advisers, sessions, certificates: certs }, null, 1));
+  await saveFile(`p1-cpd-hub-backup-${todayISO()}.zip`, await zip.generateAsync({ type: "blob" }));
+  backupStatus(missing ? "warn" : "ok", `Exported ${plural(advisers.length, "adviser")}, ${plural(sessions.length, "session")} and ${plural(certs.length, "certificate")}.${missing ? ` ${missing} file${missing === 1 ? "" : "s"} couldn't be read and ${missing === 1 ? "is" : "are"} missing from the backup.` : ""}`, false);
+}
+async function importBackup(file) {
+  try {
+    const zip = await JSZip.loadAsync(file), dj = zip.file("data.json");
+    if (!dj) throw new Error("This zip isn't a CPD Hub backup (data.json is missing).");
+    const D = JSON.parse(await dj.async("string")); if (D.format !== "p1-cpd-hub") throw new Error("This zip isn't a CPD Hub backup.");
+    backupStatus("info", "Importing advisers…", true);
+    const emailOf = new Map(D.advisers.map(a => [a.id, normEmail(a.email)]));
+    const { ids } = await store.importAdvisers(D.advisers.map(a => ({ email: a.email, name: a.name, firm: a.firm || "" })), { noRefresh: true });
+    const sessionMap = new Map();
+    for (const x of D.sessions) {
+      const ex = store.sessions().find(y => y.title === x.title && y.date === x.date);
+      if (ex) { sessionMap.set(x.id, ex.id); continue; }
+      const body = {}; SESSION_FIELDS.forEach(k => { if (x[k] !== undefined) body[k] = x[k]; }); if (x.source) body.source = x.source; delete body.id;
+      if (x.templateFileId) {
+        const tf = zip.file(`files/tpl/${x.templateFileId}`);
+        if (tf) Object.assign(body, await store.uploadTemplate(new File([await tf.async("blob")], "background", { type: x.templateType || "application/pdf" })));
+        else { body.templateFileId = ""; }
+      }
+      sessionMap.set(x.id, await store.saveSession(body));
+    }
+    const have = new Set(store.certs().map(c => c.id));
+    const todo = D.certificates.filter(c => !have.has(c.id));
+    let done = 0, failed = 0;
+    for (const c of todo) {
+      const f = zip.file(`files/cert/${c.id}`);
+      if (!f) { failed++; continue; }
+      try {
+        const email = emailOf.get(c.adviserId);
+        await store.addCertificate(new File([await f.async("blob")], c.fileName || "certificate.pdf", { type: c.contentType || "application/pdf" }), {
+          id: c.id, sessionId: sessionMap.get(c.sessionId) || "", adviserId: (email && ids[email]) || "", matchMethod: c.matchMethod || "",
+          eventTitle: c.eventTitle, eventDate: c.eventDate || "", cpdHours: Number(c.cpdHours) || 0, eventKind: c.eventKind || "", cpdType: c.cpdType || "" });
+        done++;
+      } catch (e) { failed++; }
+      if (done % 5 === 0) backupStatus("info", `Importing certificates: ${done} of ${todo.length}…`, true);
+    }
+    if (store.afterBatch) await store.afterBatch();
+    backupStatus(failed ? "warn" : "ok", `Imported ${plural(D.advisers.length, "adviser")}, ${plural(D.sessions.length, "session")} and ${plural(done, "certificate")}.${D.certificates.length - todo.length ? ` ${D.certificates.length - todo.length} were already here.` : ""}${failed ? ` ${failed} couldn't be imported; run the import again to retry them.` : ""}`, false);
+    render();
+  } catch (e) { backupStatus("err", e.message || "The backup couldn't be imported.", false); }
+}
+function adviserDetail(a) {
+  const mine = sortCerts(store.certs().filter(c => c.adviserId === a.id));
+  return `<div style="display:grid;gap:12px;padding-top:4px">
+    ${mine.length ? `<div class="table-wrap"><table><thead><tr><th>Session</th><th class="num">Hours</th><th>Matched by</th><th>Move to</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+      ${mine.map(c => `<tr><td>${esc(c.eventTitle)}<span class="sub">${fmtDate(c.eventDate)}${certCpdType(c) ? ` · ${esc(certCpdType(c))}` : ""}</span></td>
+        <td class="num">${fmtHours(c.cpdHours)}</td><td>${esc(METHOD[c.matchMethod] || "")}</td>
+        <td style="min-width:200px"><label class="visually-hidden" for="mv-${c.id}">Move ${esc(c.eventTitle)} to</label><select id="mv-${c.id}" data-action="move" data-id="${c.id}">${adviserOptions(a.id, [], "Unassign")}</select></td>
+        <td class="actions"><div class="row"><button class="btn btn-sm btn-ghost" data-action="preview" data-id="${c.id}">${icon("eye")} Preview</button><button class="btn btn-sm btn-ghost" data-action="download" data-id="${c.id}" aria-label="Download ${esc(c.eventTitle)}">${icon("download")}</button>${delBtn("cert", c.id)}</div></td></tr>`).join("")}
+    </tbody></table></div>` : `<p class="muted small">No certificates for ${esc(a.name)} yet.</p>`}
+    <div class="row">
+      ${mine.length ? `<button class="btn btn-sm btn-secondary" data-action="zip-adviser" data-id="${a.id}">${icon("download")} Download their certificates</button>` : ""}
+      <button class="btn btn-sm btn-secondary" data-action="preview-as" data-id="${a.id}">${icon("eye")} Preview their view</button>
+      <span style="margin-left:auto">${delBtn("adviser", a.id, "Delete adviser")}</span>
+    </div>
+    ${S.armed === "adviser:" + a.id ? `<p class="small" style="color:var(--err)">Deleting ${esc(a.name)} removes their account.${mine.length ? ` Their ${plural(mine.length, "certificate")} move to the assignment queue.` : ""}</p>` : ""}
+  </div>`;
+}
+function importPanel() {
+  const C = S.dir.csv, have = new Set(store.advisers().map(a => normEmail(a.email)));
+  const nNew = C ? C.people.filter(p => !have.has(p.email)).length : 0;
+  return `<section class="panel" aria-labelledby="h-imp">
+    <div class="panel-head"><div><h2 id="h-imp">Import advisers</h2><p class="muted small">Creates accounts without issuing certificates. ${CSV_HELP} Importing an email that already exists updates the name.</p></div>
+      <button class="btn btn-sm btn-ghost" data-action="csv-template">${icon("download")} CSV template</button></div>
+    <label class="drop ${C ? "compact" : ""}" data-drop="dir">${icon("file-earmark-spreadsheet")}<span><strong>${C ? `Replace ${esc(C.fileName)}` : "Choose adviser CSV"}</strong></span><input id="dir-input" type="file" accept=".csv,text/csv"></label>
+    ${C ? (C.missingColumns ? msg("err", `<strong>We couldn't find the columns we need.</strong><span>${CSV_HELP}</span>`) : `
+      ${msg(C.invalid.length || C.duplicates.length ? "warn" : "ok", `<strong>${plural(C.people.length, "valid row")}: ${nNew} new, ${C.people.length - nNew} already registered.</strong>${C.invalid.length ? `<span>${plural(C.invalid.length, "row")} left out: ${C.invalid.slice(0, 3).map(x => `row ${x.row}, ${esc(x.text)}`).join("; ")}${C.invalid.length > 3 ? "…" : ""}</span>` : ""}${C.duplicates.length ? `<span>${plural(C.duplicates.length, "duplicate email")} ignored.</span>` : ""}`)}
+      <div class="row end"><button class="btn btn-md btn-secondary" data-action="dir-cancel">Cancel</button><button class="btn btn-md btn-primary" data-action="dir-save" ${C.people.length ? "" : "disabled"}>Import ${plural(C.people.length, "adviser")}</button></div>`) : ""}
+  </section>`;
+}
+
+// ---------- insights ----------
+function insightsPage() {
+  const D = computeInsights(), I = S.ins;
+  const avg = D.inPeriod.length ? D.attendances / D.inPeriod.length : 0;
+  const head = `<div class="page-head"><div><h1>Insights</h1><p class="muted">Who attends, which firms they're from and who has gone quiet. Based on certificates issued.</p></div>
+    <div class="row">
+      <label class="field" style="min-width:170px"><span class="visually-hidden">Period</span><select id="ins-period" data-ins="period">${PERIODS.map(([v, t]) => `<option value="${v}" ${I.period === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label class="check"><input id="ins-internal" type="checkbox" data-ins="includeInternal" ${I.includeInternal ? "checked" : ""}> Include colleagues</label>
+    </div></div>`;
+  if (!D.allSessions.length) return head + `<div class="empty"><strong>No data yet</strong><span>Insights appear once certificates have been issued.</span><button class="btn btn-md btn-primary" data-action="issue-new">${icon("plus-lg")} Issue certificates</button></div>`;
+  const maxFirm = Math.max(1, ...D.firmList.map(f => f.people.length));
+  const firmLabel = (p) => { const f = D.firmList.find(x => x.key === p.fk.key); return f ? f.label : ""; };
+  const firmRows = D.firmList.slice(0, I.showAllFirms ? 9999 : 15).map(f => { const open = I.firmOpen === f.key; return `
+    <tr class="${open ? "open" : ""}"><td><strong>${esc(f.label)}</strong>${f.domain && f.label !== f.domain ? `<span class="sub">${esc(f.domain)}</span>` : f.personal ? `<span class="sub">${f.key === "personal" ? "Gmail, Outlook and similar" : "Firm from CSV, personal email"}</span>` : ""}</td>
+      <td><div class="meter-cell"><span class="meter" aria-hidden="true"><i style="width:${(f.people.length / maxFirm) * 100}%"></i></span><span class="num">${f.people.length}</span></div></td>
+      <td class="num">${f.attendances}</td><td class="num">${f.sessions.size}</td><td>${fmtDate(f.last)}</td>
+      <td class="actions"><button class="btn btn-sm btn-ghost" data-action="ins-firm" data-id="${esc(f.key)}" aria-expanded="${open}">${open ? "Hide" : "Who came"}</button></td></tr>
+    ${open ? `<tr class="detail"><td colspan="6"><div class="people-list">${f.people.map(p => `<div><strong>${esc(p.a.name)}</strong><span class="sub small muted">${esc(p.a.email)}</span><span class="small muted" style="display:block">${plural(p.count, "session")}: ${p.period.map(s => esc(s.title)).join(", ")}</span></div>`).join("")}</div></td></tr>` : ""}`; }).join("");
+  const engaged = [...D.active].sort((x, y) => y.count - x.count || (y.last.date || "").localeCompare(x.last.date || "")).slice(0, 10);
+  const quiet = [...D.people.values()].filter(p => p.total >= 2 && p.sinceLast >= 2).sort((x, y) => y.total - x.total || y.sinceLast - x.sinceLast).slice(0, 10);
+  const sel = D.allSessions.find(s => s.key === I.session) || D.inPeriod[D.inPeriod.length - 1] || D.allSessions[D.allSessions.length - 1];
+  const selIdx = D.allSessions.indexOf(sel);
+  const selFirms = new Map(); [...sel.people].map(id => D.people.get(id)).forEach(p => { const l = firmLabel(p) || "Unknown"; selFirms.set(l, (selFirms.get(l) || 0) + 1); });
+  const missing = [...D.people.values()].filter(p => !sel.people.has(p.a.id) && p.all.filter(s => D.allSessions.indexOf(s) < selIdx).length >= 2);
+  return head + `
+    <section class="metrics" aria-label="Insights summary" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="metric"><b>${D.inPeriod.length}</b><span>Sessions</span></div>
+      <div class="metric"><b>${D.active.length}</b><span>Unique attendees</span></div>
+      <div class="metric"><b>${D.realFirms.length}</b><span>Firms reached</span></div>
+      <div class="metric"><b>${avg ? Math.round(avg * 10) / 10 : 0}</b><span>Average per session</span></div>
+      <div class="metric"><b>${Math.round(D.returningRate * 100)}%</b><span>Came to 2 or more</span></div>
+    </section>
+    <section class="panel"><div class="panel-head"><div><h2>Attendance by session</h2><p class="small muted">"First time" is the adviser's first ever session with us.</p></div>
+      <div class="legend"><span><i style="background:var(--s-ret)"></i>Returning</span><span><i style="background:var(--s-new)"></i>First time</span></div></div>
+      ${stackedChart(D.inPeriod)}</section>
+    <section class="panel"><div class="panel-head"><div><h2>Firms</h2><p class="small muted">Grouped by email domain and named from the firm column where there is one.</p></div>
+      <button class="btn btn-sm btn-secondary" data-action="ins-export-firms">${icon("download")} Firms CSV</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Firm</th><th>Advisers</th><th class="num">Attendances</th><th class="num">Sessions</th><th>Last attended</th><th><span class="visually-hidden">Details</span></th></tr></thead><tbody>${firmRows}</tbody></table></div>
+      ${D.firmList.length > 15 ? `<div class="row"><button class="btn btn-sm btn-ghost" data-action="ins-all-firms">${I.showAllFirms ? "Show top 15" : `Show all ${D.firmList.length} firms`}</button></div>` : ""}</section>
+    <div class="grid-2">
+      <section class="panel"><div class="panel-head"><h2>Most engaged</h2><button class="btn btn-sm btn-secondary" data-action="ins-export-people">${icon("download")} Attendee CSV</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Adviser</th><th class="num">Sessions</th><th class="num">CPD hrs</th></tr></thead><tbody>
+        ${engaged.map(p => `<tr><td><strong>${esc(p.a.name)}</strong><span class="sub">${esc(firmLabel(p))}</span></td><td class="num">${p.count}</td><td class="num">${fmtHours(p.hours)}</td></tr>`).join("")}</tbody></table></div></section>
+      <section class="panel"><div><h2>Gone quiet</h2><p class="small muted">Came to 2 or more sessions but missed the last 2 or more.</p></div>
+        ${quiet.length ? `<div class="table-wrap"><table><thead><tr><th>Adviser</th><th class="num">Attended</th><th>Last seen</th></tr></thead><tbody>
+        ${quiet.map(p => `<tr><td><strong>${esc(p.a.name)}</strong><span class="sub">${esc(p.a.email)}</span></td><td class="num">${p.total}</td><td>${esc(p.last.title)}<span class="sub">${plural(p.sinceLast, "session")} ago</span></td></tr>`).join("")}</tbody></table></div>`
+        : `<p class="muted small">Nobody yet. This fills in after a few sessions.</p>`}</section>
+    </div>
+    <section class="panel"><div class="panel-head"><h2>Session detail</h2>
+      <label class="field" style="min-width:240px;flex:1;max-width:440px"><span class="visually-hidden">Choose a session</span><select id="ins-session" data-ins="session">${[...D.allSessions].reverse().map(s => `<option value="${esc(s.key)}" ${s === sel ? "selected" : ""}>${esc(s.title)} (${fmtDate(s.date)})</option>`).join("")}</select></label></div>
+      <div class="summary"><div class="lead"><b>${sel.people.size}</b><span>Attended</span></div><div><b>${sel.newCount}</b><span>First time</span></div><div><b>${sel.returning}</b><span>Returning</span></div><div><b>${selFirms.size}</b><span>Firms</span></div></div>
+      <div class="grid-2">
+        <div style="display:grid;gap:8px;min-width:0"><h3>Firms at this session</h3><div class="table-wrap"><table><tbody>${[...selFirms.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).map(([l, n]) => `<tr><td>${esc(l)}</td><td class="num">${n}</td></tr>`).join("")}</tbody></table></div></div>
+        <div style="display:grid;gap:8px;min-width:0"><h3>Regulars who missed it</h3>${missing.length ? `<div class="table-wrap"><table><tbody>${missing.slice(0, 10).map(p => `<tr><td><strong>${esc(p.a.name)}</strong><span class="sub">${esc(firmLabel(p))}</span></td><td class="num">${plural(p.all.filter(s => D.allSessions.indexOf(s) < selIdx).length, "earlier session")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted small">Every regular came to this one.</p>`}</div>
+      </div></section>`;
+}
+
+// ---------- adviser portal ----------
+function adviserShell() {
+  const top = `<header class="topbar"><div class="wrap">${brand()}
+      ${S.adviser && !S.previewing ? `<div class="topbar-end"><button class="btn btn-sm btn-secondary" data-action="logout">${icon("box-arrow-right")}<span class="btn-label">Sign out</span></button></div>` : ""}</div></header>`;
+  const band = `${S.previewing ? `<div class="preview-bar" role="region" aria-label="Preview"><div class="wrap">${icon("eye")}<span>${S.adviser ? `Previewing <strong>${esc(S.adviser.name)}</strong>'s view` : "Previewing the adviser sign-in"}</span><button class="btn btn-sm btn-on-dark" data-action="end-preview">End preview</button></div></div>` : ""}
+    <div class="audience"><div class="wrap"><i aria-hidden="true"></i>For UK financial advisers only</div></div>`;
+  if (S.boot === "loading") return top + band + `<main><div class="wrap"><p class="muted">Loading…</p></div></main>`;
+  if (!S.adviser) return top + band + `<main><div class="wrap">${signInCard()}</div></main>`;
+  const list = sortCerts(S.adviserCerts), hours = list.reduce((s, c) => s + (Number(c.cpdHours) || 0), 0);
+  return top + band + `<main id="main"><div class="wrap">
+    <div class="page-head"><div><h1>My CPD certificates</h1><p class="muted">${esc(S.adviser.name)} · ${esc(S.adviser.email)}</p></div></div>
+    <div class="figures"><div class="figure"><b>${list.length}</b><span>Certificates earned</span></div><div class="figure"><b>${fmtHours(hours)}</b><span>CPD hours with P1</span></div></div>
+    ${list.length ? `<section class="panel" aria-labelledby="h-certs" style="padding:0;gap:0">
+      <div class="panel-head" style="padding:16px 20px;border-bottom:1px solid var(--line)"><h2 id="h-certs">Certificates</h2>
+        ${list.length > 1 ? `<button class="btn btn-md btn-primary" data-action="zip-mine">${icon("download")} Download all</button>` : ""}</div>
+      <table class="cert-table stack"><thead><tr><th>Session</th><th>Date</th><th>CPD type</th><th class="num">Hours</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        ${list.map(c => `<tr><td><span class="cert-title">${esc(c.eventTitle)}</span>${c.eventKind ? `<span class="sub">${esc(c.eventKind)}</span>` : ""}</td>
+          <td data-label="Date">${fmtDate(c.eventDate)}</td><td data-label="CPD type">${esc(certCpdType(c) || "Not stated")}</td>
+          <td class="num" data-label="Hours">${fmtHours(c.cpdHours)}</td>
+          <td class="actions"><div class="row"><button class="btn btn-sm btn-ghost" data-action="preview" data-id="${c.id}" aria-label="Preview certificate for ${esc(c.eventTitle)}">${icon("eye")} Preview</button>
+            <button class="btn btn-sm btn-secondary" data-action="download" data-id="${c.id}" aria-label="Download PDF for ${esc(c.eventTitle)}">${icon("download")} Download PDF</button></div></td></tr>`).join("")}
+      </tbody></table></section>`
+    : `<div class="empty">${icon("inbox")}<strong>No certificates yet</strong><span>Your certificates appear here after each P1 webinar or event you attend.</span></div>`}
+  </div></main>`;
+}
+function signInCard() {
+  const L = S.login;
+  if (L.step === "code") return `<form class="auth" data-form="adviser-code" novalidate>
+    <div style="display:grid;gap:6px"><h1>Check your email</h1><p class="muted">If <strong>${esc(L.email)}</strong> is registered, we've sent it a 6-digit code. It expires in 10 minutes.</p></div>
+    <label class="field"><span>Sign-in code</span><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required ${L.error ? 'aria-invalid="true" aria-describedby="login-err"' : ""}></label>
+    ${L.error ? `<p class="error-text" id="login-err" role="alert">${icon("exclamation-circle")} ${esc(L.error)}</p>` : ""}
+    <button class="btn btn-lg btn-primary" type="submit" ${L.busy ? "disabled" : ""}>${L.busy ? "Checking…" : "Sign in"}</button>
+    <button type="button" class="btn btn-md btn-ghost" data-action="login-back">Use a different email</button>
+  </form>`;
+  return `<form class="auth" data-form="adviser-login" novalidate>
+    <div style="display:grid;gap:6px"><h1>View your CPD certificates</h1><p class="muted">Sign in with the email address you registered with for our webinars and events.</p></div>
+    <label class="field"><span>Email address</span><input id="login-email" type="email" autocomplete="email" required value="${esc(L.email)}" ${L.error ? 'aria-invalid="true" aria-describedby="login-err"' : ""}></label>
+    ${L.error ? `<p class="error-text" id="login-err" role="alert">${icon("exclamation-circle")} ${esc(L.error)}</p>` : ""}
+    <button class="btn btn-lg btn-primary" type="submit" ${L.busy ? "disabled" : ""}>${L.busy ? "Checking…" : "Continue"}</button>
+  </form>`;
+}
+
+// ---------- certificate files, preview, downloads ----------
+const blobCache = new Map();
+const findCert = (id) => store.certs().find(c => c.id === id) || S.adviserCerts.find(c => c.id === id);
+async function certBlob(cert) { if (!blobCache.has(cert.id)) blobCache.set(cert.id, store.fileBlob(cert).catch(e => { blobCache.delete(cert.id); throw e; })); return blobCache.get(cert.id); }
+function openModal(title, sub, actionsHtml, fill) {
+  const opener = document.activeElement;
+  const m = document.createElement("div"); m.className = "modal"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.setAttribute("aria-labelledby", "modal-title");
+  m.innerHTML = `<div class="modal-inner"><div class="panel-head"><div><h2 id="modal-title">${esc(title)}</h2>${sub ? `<p class="small muted">${esc(sub)}</p>` : ""}</div>
+    <div class="row">${actionsHtml || ""}<button class="btn btn-sm btn-secondary" data-close>${icon("x-lg")} Close</button></div></div>
+    <div data-body><div class="preview-box"><div class="placeholder">Loading…</div></div></div></div>`;
+  document.body.appendChild(m);
+  const close = () => { m.remove(); document.removeEventListener("keydown", onKey, true); if (opener && document.contains(opener)) opener.focus(); };
+  const onKey = (e) => {
+    if (e.key === "Escape") { e.stopPropagation(); close(); }
+    if (e.key === "Tab") { const f = [...m.querySelectorAll("button, [href], input, select, textarea")].filter(x => !x.disabled); if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); } }
+  };
+  document.addEventListener("keydown", onKey, true);
+  m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-close]")) close(); });
+  $("[data-close]", m).focus();
+  fill($("[data-body]", m), m);
+  return close;
+}
+function openCertPreview(id) {
+  const c = findCert(id); if (!c) return;
+  openModal(c.eventTitle, `${fmtDate(c.eventDate)} · ${fmtHours(c.cpdHours)} CPD hours`, `<button class="btn btn-sm btn-primary" data-action="download" data-id="${c.id}">${icon("download")} Download PDF</button>`,
+    async (body, m) => { try { await renderInto(body, await certBlob(c), c.contentType, Math.min(900, m.clientWidth - 48)); } catch (e) { body.innerHTML = msg("err", "<span>We couldn't load this certificate. Try downloading it instead.</span>"); } });
+}
+function certFileName(c, adviser) {
+  const ext = (c.fileName && c.fileName.match(/\.[a-z0-9]+$/i)) ? c.fileName.match(/\.[a-z0-9]+$/i)[0].toLowerCase() : ".pdf";
+  return safeFile(`CPD - ${c.eventTitle} - ${c.eventDate || ""} - ${adviser ? adviser.name : ""}`).replace(/ - +-/g, " -").replace(/ -\s*$/, "") + ext;
+}
+async function saveFile(name, blob, okText) {
+  try { await store.save(name, blob); if (okText) toast(okText, "ok"); }
+  catch (e) { if (!e || e.code !== "declined") toast((e && e.message) || "The download didn't start. Try again.", "err"); }
+}
+async function downloadOne(id) {
+  const c = findCert(id); if (!c) return;
+  const who = adviserById().get(c.adviserId) || S.adviser;
+  try { await saveFile(certFileName(c, who), await certBlob(c)); } catch (e) { toast("We couldn't load that certificate. Try again.", "err"); }
+}
+async function downloadZip(certs, zipName, folderPerAdviser) {
+  if (!window.JSZip) return toast("Zip downloads aren't available right now.", "err");
+  toast(`Preparing ${plural(certs.length, "certificate")}…`);
+  const zip = new JSZip(), advisers = adviserById(), used = new Set(); let missing = 0;
+  for (const c of certs) {
+    const who = advisers.get(c.adviserId) || S.adviser;
+    let name = certFileName(c, who); if (folderPerAdviser && who) name = safeFile(`${who.name} (${who.email})`) + "/" + name;
+    let n = 2; const base = name; while (used.has(name)) name = base.replace(/(\.[a-z0-9]+)$/i, ` (${n++})$1`); used.add(name);
+    try { zip.file(name, await certBlob(c)); } catch (e) { missing++; }
+  }
+  await saveFile(zipName, await zip.generateAsync({ type: "blob" }), missing ? `${missing} couldn't be added to the zip.` : "");
+}
+
+// live certificate preview for the issue flow
+let previewTimer, previewSeq = 0;
+function schedulePreview(delay = 350) { if (S.flow.mode !== "generate") return; clearTimeout(previewTimer); previewTimer = setTimeout(buildPreview, delay); }
+async function buildPreview() {
+  const seq = ++previewSeq, F = S.flow;
+  try {
+    const first = F.attendees && F.attendees.people[0];
+    const sess = { ...F.session, title: F.session.title.trim() || "Session title" };
+    let tpl = null;
+    if (sess.theme === "custom") { tpl = F.templateFile || (sess.templateFileId ? await store.templateBlob(sess) : null); if (!tpl) { S.preview = { node: null, error: "Choose a background file to see the preview." }; attachPreview(); return; } }
+    const blob = await generateCertificate(sess, { name: first ? first.name : "Jane Smith" }, "SAMPLE0000AB", tpl);
+    if (seq !== previewSeq) return;
+    const holder = document.createElement("div"); await renderInto(holder, blob, "application/pdf", 700);
+    if (seq !== previewSeq) return;
+    S.preview = { node: holder.firstChild, error: "" }; attachPreview();
+  } catch (e) { S.preview = { node: null, error: "The preview couldn't be built: " + (e.message || e) }; attachPreview(); }
+}
+function attachPreview() {
+  for (const box of document.querySelectorAll("#cert-preview, #cert-preview-modal")) {
+    if (S.preview.node) box.replaceChildren(box.id === "cert-preview" ? S.preview.node : S.preview.node.cloneNode(true));
+    else box.innerHTML = previewPlaceholder();
+    if (box.id === "cert-preview-modal" && S.preview.node) { const src = S.preview.node, cl = box.firstChild; cl.getContext && cl.getContext("2d").drawImage(src, 0, 0); }
+  }
+}
+
+// ---------- flow actions ----------
+// clear a field's error in place: re-rendering here would replace the field the user is moving into
+function clearFieldError(k, el) {
+  if (!S.flow.errors[k]) return; delete S.flow.errors[k];
+  document.getElementById("err-" + k)?.remove(); if (el) { el.removeAttribute("aria-invalid"); el.removeAttribute("aria-describedby"); }
+}
+function syncSessionFields() { // read what's on screen, so nothing typed is lost to a missed input event
+  document.querySelectorAll("[data-sbind]").forEach(el => { S.flow.session[el.dataset.sbind] = el.type === "checkbox" ? el.checked : el.value; });
+}
+function validateSession() {
+  syncSessionFields();
+  const F = S.flow, ss = F.session, e = {};
+  if (!ss.title.trim()) e.title = "Enter the session title.";
+  if (!ss.date) e.date = "Enter the date of the session.";
+  const h = Number(ss.hours); if (ss.hours === "" || isNaN(h) || h < 0 || h > 40) e.hours = "Enter CPD hours between 0 and 40, e.g. 1 or 1.5.";
+  if (F.mode === "generate" && ss.theme === "custom" && !F.templateFile && !ss.templateFileId) e.template = "Choose a background file, or pick a P1 design.";
+  F.errors = e; return !Object.keys(e).length;
+}
+function focusFirstError() { const el = document.querySelector('[aria-invalid="true"], .error-text'); if (el) { if (el.closest("details")) el.closest("details").open = true; (el.matches("input,select,textarea") ? el : el.closest(".field")?.querySelector("input,select,textarea") || el).focus(); } }
+function setStep(n) { S.flow.step = n; render(); const h = document.querySelector(".steps [aria-current='step']"); if (h) h.scrollIntoView({ block: "nearest" }); announce(`Step ${n} of 3: ${STEP_LABELS()[n - 1][0]}`); }
+async function handleAttendeeCSV(file) {
+  if (!file) return;
+  const parsed = readPeopleCSV(await file.text());
+  S.flow.attendees = { fileName: file.name, ...parsed }; delete S.flow.errors.attendees;
+  render(); schedulePreview(0);
+  announce(parsed.missingColumns ? "The CSV is missing required columns." : `${plural(parsed.people.length, "attendee")} loaded.`);
+}
+async function handleUploads(files) {
+  files = [...files].filter(f => /\.(pdf|png|jpe?g)$/i.test(f.name) || /pdf|image\/(png|jpeg)/.test(f.type));
+  if (!files.length) return toast("Choose PDF, PNG or JPG files.", "err");
+  const rows = files.map(f => ({ key: uid(), file: f, status: "reading", adviserId: "", candidates: [], method: "", include: true, note: "" }));
+  S.flow.uploads = S.flow.uploads.concat(rows); delete S.flow.errors.uploads; render();
+  const advisers = store.advisers();
+  for (const r of rows) {
+    try {
+      const isPdf = /pdf/.test(r.file.type) || /\.pdf$/i.test(r.file.name);
+      const text = isPdf ? await pdfText(await r.file.arrayBuffer()) : "";
+      if (isPdf && text.replace(/\s/g, "").length < 5) r.note = "No readable text, so the filename was used";
+      Object.assign(r, matchCertificate(text, r.file.name, advisers));
+      if (r.status === "ambiguous") r.note = "More than one adviser's name is on this certificate";
+      if (r.status === "unmatched" && !r.note) r.note = "No adviser's name or email was found";
+      flagUploadDuplicate(r);
+    } catch (e) { r.status = "error"; r.include = false; r.note = "This file couldn't be opened"; }
+    if (S.route === "issue") render();
+  }
+  announce(`${plural(rows.length, "file")} checked.`);
+}
+function flagUploadDuplicate(r) {
+  const ss = S.flow.session, t = ss.title.trim().toLowerCase();
+  if (!r.adviserId) { if (r.status === "duplicate") { r.status = "unmatched"; r.include = true; } return; }
+  const dup = store.certs().some(c => c.adviserId === r.adviserId && ((ss.id && c.sessionId === ss.id) || (String(c.eventTitle).trim().toLowerCase() === t && (c.eventDate || "") === ss.date)))
+    || S.flow.uploads.some(o => o !== r && o.include && o.adviserId === r.adviserId && o.status !== "error");
+  if (dup) { r.status = "duplicate"; r.include = false; r.note = "This adviser already has a certificate for this session"; }
+  else if (r.status === "duplicate") { r.status = "matched"; r.include = true; r.note = ""; }
+}
+async function issueNow() {
+  const F = S.flow, ss = F.session;
+  const gen = F.mode === "generate";
+  const rows = gen ? attendeeRows().filter(r => r.include) : F.uploads.filter(r => r.include && r.status !== "error" && r.status !== "reading");
+  F.issuing = { done: 0, total: rows.length, phase: "Preparing" }; render();
+  const result = { title: ss.title.trim(), issued: [], failed: [], queued: 0, created: 0, certIds: [], sessionId: "" };
+  try {
+    if (gen && F.templateFile) { Object.assign(ss, await store.uploadTemplate(F.templateFile)); F.templateFile = null; }
+    const body = {}; SESSION_FIELDS.forEach(k => body[k] = ss[k]); body.title = body.title.trim(); body.hours = String(body.hours);
+    if (!gen) body.source = "upload";
+    ss.id = await store.saveSession(body); result.sessionId = ss.id;
+    const meta = { sessionId: ss.id, eventTitle: body.title, eventDate: ss.date, cpdHours: Number(ss.hours) || 0, eventKind: ss.kind, cpdType: ss.cpdType || "" };
+    let ids = {};
+    if (gen) {
+      const r = await store.importAdvisers(rows.map(x => ({ email: x.email, name: x.name, firm: x.firm })), { noRefresh: true });
+      ids = r.ids || {}; result.created = r.added || 0;
+    }
+    const tpl = gen && ss.theme === "custom" ? await store.templateBlob(ss) : null;
+    F.issuing.phase = "Issuing";
+    for (const r of rows) {
+      try {
+        const certId = uid();
+        if (gen) {
+          const blob = await generateCertificate(ss, r, certId, tpl);
+          await store.addCertificate(new File([blob], safeFile(`${r.name} - ${ss.title}`) + ".pdf", { type: "application/pdf" }), { ...meta, id: certId, adviserId: ids[r.email], matchMethod: "generated" });
+          result.issued.push({ name: r.name, email: r.email });
+        } else {
+          await store.addCertificate(r.file, { ...meta, id: certId, adviserId: r.adviserId || "", matchMethod: r.adviserId ? (r.method || "manual") : "" });
+          const a = adviserById().get(r.adviserId);
+          if (a) result.issued.push({ name: a.name, email: a.email }); else result.queued++;
+        }
+        result.certIds.push(certId);
+      } catch (e) { result.failed.push(`${gen ? r.name : r.file.name}: ${e.message || e.code || "failed"}`); }
+      F.issuing.done++;
+      const bar = document.querySelector(".progress i"), txt = document.querySelector(".progress + p");
+      if (bar) bar.style.width = (F.issuing.done / F.issuing.total) * 100 + "%"; if (txt) txt.textContent = `Issuing ${F.issuing.done} of ${F.issuing.total}. Keep this page open.`;
+    }
+    if (store.afterBatch) await store.afterBatch();
+  } catch (e) { result.failed.unshift(e.message || "The session couldn't be saved."); }
+  F.issuing = null; F.result = result; render(); window.scrollTo(0, 0);
+  const h = document.getElementById("h-res"); if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
+  announce(`Issued ${plural(result.issued.length, "certificate")}.`);
+}
+function startFlow(session, step = 1) {
+  S.flow = newFlow(session ? { ...newSession(), ...session } : null);
+  if (session && session.source === "upload") S.flow.mode = "upload";
+  S.flow.step = step; S.preview = { node: null, error: "" };
+  go("issue"); schedulePreview(0);
+}
+function previewAs(adviser) {
+  S.previewing = true; S.view = "adviser"; S.adviser = adviser;
+  S.adviserCerts = adviser ? store.certs().filter(c => c.adviserId === adviser.id) : [];
+  S.login = { step: "email", email: "", error: "", busy: false };
+  render(); window.scrollTo(0, 0);
+}
+
+// ---------- events ----------
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-action]"); if (!t || t.disabled) return;
+  if (t.tagName === "SELECT" || (t.tagName === "INPUT" && t.type !== "button")) return;
+  const a = t.dataset.action, id = t.dataset.id;
+  if (a !== "delete" && S.armed) S.armed = null;
+  try {
+    switch (a) {
+      case "go": go(t.dataset.route); break;
+      case "issue-new": startFlow(null); break;
+      case "issue-more": { const st = sessionById(id); if (st) startFlow(st, 2); break; }
+      case "sess-del": { const k = t.dataset.key; S.sessDel = S.sessDel && S.sessDel.key === k ? null : { key: k, orphans: true, busy: false }; render(); document.querySelector('[data-action="sess-del-confirm"]')?.focus(); break; }
+      case "sess-del-cancel": { const k = S.sessDel && S.sessDel.key; S.sessDel = null; render(); document.querySelector(`[data-action="sess-del"][data-key="${CSS.escape(k || "")}"]`)?.focus(); break; }
+      case "sess-del-confirm": await deleteSessionGroup(t.dataset.key); break;
+      case "step": { const n = +t.dataset.n; if (n < S.flow.step) setStep(n); break; }
+      case "next": {
+        const F = S.flow;
+        if (F.step === 1) { if (!validateSession()) { render(); focusFirstError(); announce("Check the highlighted fields."); return; } setStep(2); }
+        else if (F.step === 2) setStep(3);
+        break;
+      }
+      case "preview-modal": openModal("Certificate preview", S.flow.session.title || "", "", (body) => { body.innerHTML = `<div class="preview-box" id="cert-preview-modal">${previewPlaceholder()}</div>`; attachPreview(); }); break;
+      case "issue": await issueNow(); break;
+      case "zip-result": await downloadZip(store.certs().filter(c => S.flow.result.certIds.includes(c.id)), safeFile(`CPD certificates - ${S.flow.result.title}`) + ".zip", true); break;
+      case "up-remove": S.flow.uploads = S.flow.uploads.filter(r => r.key !== t.dataset.key); S.flow.uploads.forEach(flagUploadDuplicate); render(); break;
+      case "csv-template": await saveFile("cpd-attendees-template.csv", new Blob(["email,name,firm\njane.smith@example-advice.co.uk,Jane Smith,Example Advice Ltd\n"], { type: "text/csv" })); break;
+      case "assign": {
+        const sel = document.getElementById("as-" + id);
+        if (!sel || !sel.value) { toast("Choose an adviser first.", "err"); sel && sel.focus(); return; }
+        const who = adviserById().get(sel.value); await store.assign(id, sel.value);
+        toast(`Assigned to ${who ? who.name : "adviser"}.`, "ok"); render();
+        const next = document.querySelector('[id^="as-"]'); (next || document.querySelector("main h1"))?.focus(); break;
+      }
+      case "delete": {
+        const key = t.dataset.kind + ":" + id;
+        if (S.armed !== key) { S.armed = key; render(); document.querySelector(`[data-action="delete"][data-id="${id}"]`)?.focus(); return; }
+        S.armed = null;
+        if (t.dataset.kind === "cert") { await store.deleteCertificate(findCert(id)); toast("Certificate deleted.", "ok"); }
+        else { await store.deleteAdviser(id); S.dir.open = null; toast("Adviser deleted.", "ok"); }
+        render(); break;
+      }
+      case "preview": openCertPreview(id); break;
+      case "download": await downloadOne(id); break;
+      case "dir-open": S.dir.open = S.dir.open === id ? null : id; render(); break;
+      case "dir-import": S.dir.importing = !S.dir.importing; S.dir.csv = null; render(); break;
+      case "dir-cancel": S.dir.importing = false; S.dir.csv = null; render(); break;
+      case "dir-save": { t.disabled = true; const r = await store.importAdvisers(S.dir.csv.people); S.dir.importing = false; S.dir.csv = null; render(); toast(`Imported: ${r.added} new, ${r.updated} updated.`, "ok"); break; }
+      case "zip-adviser": { const ad = adviserById().get(id); await downloadZip(store.certs().filter(c => c.adviserId === id), safeFile(`CPD certificates - ${ad.name}`) + ".zip", false); break; }
+      case "backup-export": await exportAll(); break;
+      case "zip-all": await downloadZip(store.certs().filter(c => c.adviserId), `CPD certificates - all advisers - ${todayISO()}.zip`, true); break;
+      case "zip-mine": await downloadZip(S.adviserCerts, safeFile(`CPD certificates - ${S.adviser.name}`) + ".zip", false); break;
+      case "preview-as": previewAs(adviserById().get(id)); break;
+      case "preview-portal": previewAs(null); break;
+      case "end-preview": S.previewing = false; S.adviser = null; S.adviserCerts = []; go(S.route); break;
+      case "logout": await store.logout(); S.adviser = null; S.adviserCerts = []; S.login = { step: "email", email: "", error: "", busy: false }; render(); break;
+      case "login-back": S.login.step = "email"; S.login.error = ""; render(); break;
+      case "ins-firm": S.ins.firmOpen = S.ins.firmOpen === id ? null : id; render(); break;
+      case "ins-all-firms": S.ins.showAllFirms = !S.ins.showAllFirms; render(); break;
+      case "ins-export-firms": await exportInsights("firms"); break;
+      case "ins-export-people": await exportInsights("people"); break;
+    }
+  } catch (err) { toast(err.message || "Something went wrong. Try again.", "err"); render(); }
+});
+document.addEventListener("change", async (e) => {
+  const t = e.target, F = S.flow;
+  if (t.id === "att-input") { const f = t.files[0]; t.value = ""; return handleAttendeeCSV(f); }
+  if (t.id === "cert-input") { const f = [...t.files]; t.value = ""; return handleUploads(f); }
+  if (t.id === "backup-input") { const f = t.files[0]; t.value = ""; if (f) await importBackup(f); return; }
+  if (t.id === "dir-input") { const f = t.files[0]; t.value = ""; if (f) { S.dir.csv = { fileName: f.name, ...readPeopleCSV(await f.text()) }; render(); } return; }
+  if (t.id === "tpl-input") { const f = t.files[0]; t.value = ""; if (f) { F.templateFile = f; delete F.errors.template; render(); schedulePreview(0); } return; }
+  if (t.dataset.action === "mode") { F.mode = t.value; F.errors = {}; render(); schedulePreview(0); return; }
+  if (t.dataset.sbind) {
+    F.session[t.dataset.sbind] = t.type === "checkbox" ? t.checked : t.value;
+    clearFieldError(t.dataset.sbind, t);
+    if (t.tagName === "SELECT" && t.dataset.sbind === "theme") render();
+    schedulePreview(); return;
+  }
+  if (t.dataset.action === "del-orphans") { if (S.sessDel) S.sessDel.orphans = t.checked; return; }
+  if (t.dataset.action === "att-inc") { const rows = S.flow.attendees.people; rows[+t.dataset.i].include = t.checked; render(); return; }
+  if (t.dataset.action === "att-all") { S.flow.attendees.people.forEach(r => r.include = t.checked); render(); return; }
+  if (t.dataset.action === "up-inc") { const r = F.uploads.find(x => x.key === t.dataset.key); if (r) r.include = t.checked; render(); return; }
+  if (t.dataset.action === "up-assign") { const r = F.uploads.find(x => x.key === t.dataset.key); if (r) { r.adviserId = t.value; r.method = t.value ? "manual" : ""; r.status = t.value ? "matched" : "unmatched"; r.include = true; r.note = t.value ? "" : "Will go to the assignment queue"; F.uploads.forEach(flagUploadDuplicate); } render(); return; }
+  if (t.dataset.action === "move") { try { await store.assign(t.dataset.id, t.value); const who = adviserById().get(t.value); toast(who ? `Moved to ${who.name}.` : "Moved to the assignment queue.", "ok"); } catch (err) { toast(err.message, "err"); } render(); return; }
+  if (t.dataset.ins) { S.ins[t.dataset.ins] = t.type === "checkbox" ? t.checked : t.value; if (t.dataset.ins !== "session") S.ins.firmOpen = null; render(); return; }
+});
+document.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.dataset.action === "search") { S.dir.search = t.value; render(); return; }
+  if (t.dataset.sbind && t.type !== "checkbox" && t.tagName !== "SELECT") {
+    S.flow.session[t.dataset.sbind] = t.value; schedulePreview(); if (t.value) clearFieldError(t.dataset.sbind, t);
+    if (t.type === "range") { const v = $("#pos-val"); if (v) v.textContent = t.value; }
+  }
+});
+document.addEventListener("submit", async (e) => {
+  const f = e.target.dataset.form; if (!f) return; e.preventDefault();
+  const L = S.login;
+  try {
+    if (f === "admin-login") { S.adminLoginError = ""; await store.adminLogin($("#admin-pw").value); S.isAdmin = true; go("overview"); return; }
+    if (f === "adviser-login") {
+      L.email = normEmail($("#login-email").value); L.error = "";
+      if (!validEmail(L.email)) { L.error = "Enter a valid email address, like name@yourfirm.co.uk."; render(); $("#login-email").focus(); return; }
+      if (S.previewing) { // preview never touches the real adviser sign-in
+        const a = store.advisers().find(x => normEmail(x.email) === L.email);
+        if (!a) { L.error = "No adviser account uses that email. Check the spelling, or import them from the Advisers tab."; render(); $("#login-email").focus(); return; }
+        previewAs(a); return;
+      }
+      L.busy = true; render();
+      const r = await store.login(L.email); L.busy = false;
+      if (r.codeSent) { L.step = "code"; render(); $("#login-code").focus(); return; }
+      S.adviser = r.adviser; S.adviserCerts = await store.myCertificates(r.adviser); render(); $("main h1")?.focus(); return;
+    }
+    if (f === "adviser-code") {
+      L.busy = true; L.error = ""; render();
+      const r = await store.verify(L.email, $("#login-code").value.trim());
+      L.busy = false; S.adviser = r.adviser; S.adviserCerts = await store.myCertificates(r.adviser); render(); return;
+    }
+  } catch (err) {
+    if (f === "admin-login") { S.adminLoginError = err.message; render(); $("#admin-pw").focus(); return; }
+    L.busy = false; L.error = err.message; render(); (document.getElementById(f === "adviser-code" ? "login-code" : "login-email"))?.focus();
+  }
+});
+["dragover", "dragleave", "drop"].forEach(ev => document.addEventListener(ev, (e) => {
+  const z = e.target.closest && e.target.closest("[data-drop]"); if (!z) return;
+  e.preventDefault();
+  if (ev === "dragover") z.classList.add("over"); else z.classList.remove("over");
+  if (ev !== "drop") return;
+  const files = e.dataTransfer.files, k = z.dataset.drop;
+  if (k === "att") handleAttendeeCSV(files[0]);
+  else if (k === "certs") handleUploads(files);
+  else if (k === "dir" && files[0]) files[0].text().then(tx => { S.dir.csv = { fileName: files[0].name, ...readPeopleCSV(tx) }; render(); });
+  else if (k === "tpl" && files[0]) { S.flow.templateFile = files[0]; render(); schedulePreview(0); }
+}));
+// chart tooltips
+function showTip(g) {
+  const wrap = g.closest(".chart-scroll"), tip = wrap && wrap.querySelector(".ch-tip"); if (!tip) return;
+  tip.textContent = g.dataset.tip; tip.hidden = false;
+  const r = g.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+  tip.style.left = Math.min(Math.max(8, r.left - w.left + wrap.scrollLeft + r.width / 2 - 110), wrap.scrollWidth - 228) + "px"; tip.style.top = "6px";
+}
+function hideTip(g) { const tip = g.closest(".chart-scroll")?.querySelector(".ch-tip"); if (tip) tip.hidden = true; }
+document.addEventListener("mouseover", e => { const g = e.target.closest && e.target.closest("g.bar"); if (g) showTip(g); });
+document.addEventListener("mouseout", e => { const g = e.target.closest && e.target.closest("g.bar"); if (g && !g.contains(e.relatedTarget)) hideTip(g); });
+document.addEventListener("focusin", e => { const g = e.target.closest && e.target.closest("g.bar"); if (g) showTip(g); });
+document.addEventListener("focusout", e => { const g = e.target.closest && e.target.closest("g.bar"); if (g) hideTip(g); });
+
+// ---------- boot ----------
+(async () => {
+  if (HUB_MODE === "server") S.view = location.hash === "#admin" ? "admin" : "adviser";
+  render();
+  try {
+    const r = await store.init((evt) => {
+      if (evt.error) { S.boot = "error"; S.bootError = evt.error; }
+      if (evt.slow && !store.loaded()) toast("Storage is slow to respond. Records will appear when it answers.");
+      if (S.previewing && S.adviser) { const a = store.advisers().find(x => x.id === S.adviser.id); if (a) { S.adviser = a; S.adviserCerts = store.certs().filter(c => c.adviserId === a.id); } }
+      if (!S.flow.issuing) render();
+    });
+    if (r.error) { S.boot = "error"; S.bootError = r.error; }
+    else {
+      S.boot = "ready"; S.isAdmin = !!r.admin; S.canUpload = !!r.canUpload;
+      if (r.adviser) { S.adviser = r.adviser; S.adviserCerts = await store.myCertificates(r.adviser); S.view = "adviser"; }
+      if (HUB_MODE === "server" && r.admin) S.view = "admin";
+    }
+  } catch (e) { S.boot = "error"; S.bootError = e.message || "The hub could not start."; }
+  render();
+})();
+window.addEventListener("hashchange", () => { if (HUB_MODE === "server" && location.hash === "#admin") { S.view = "admin"; render(); } });
+
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,14 @@
+{
+  "name": "p1-cpd-hub-netlify",
+  "version": "1.0.0",
+  "description": "P1 CPD Hub on Netlify (static site + Netlify Functions + Netlify Blobs)",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.11",
+    "nodemailer": "^6.9.16"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}
